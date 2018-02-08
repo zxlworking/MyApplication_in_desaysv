@@ -1,0 +1,48 @@
+@startuml
+
+interface Runnable
+class View
+
+interface OnSeekBarChangeListener{
+    void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
+    void onStartTrackingTouch(SeekBar seekBar)
+    void onStopTrackingTouch(SeekBar seekBar)
+}
+
+class SeekBar{
+    private OnSeekBarChangeListener mOnSeekBarChangeListener
+
+    onProgressRefresh(float scale, boolean fromUser, int progress)
+}
+
+
+class AbsSeekBar{
+    public boolean onTouchEvent(MotionEvent event)
+    private void trackTouchEvent(MotionEvent event)
+}
+
+class ProgressBar{
+    private long mUiThreadId
+    private int mProgress
+    private boolean mRefreshIsPosted
+    private RefreshProgressRunnable mRefreshProgressRunnable
+
+    protected void onAttachedToWindow()
+    protected void onDetachedFromWindow()
+    synchronized boolean setProgressInternal(int progress, boolean fromUser, boolean animate)
+    private synchronized void refreshProgress(int id, int progress, boolean fromUser, boolean animate)
+    private synchronized void doRefreshProgress(int id, int progress, boolean fromUser, boolean callBackToApp, boolean animate)
+    void onProgressRefresh(float scale, boolean fromUser, int progress)
+}
+
+class RefreshProgressRunnable{
+}
+
+View <|-- ProgressBar
+ProgressBar <|-- AbsSeekBar
+AbsSeekBar <|-- SeekBar
+Runnable <|.. RefreshProgressRunnable
+RefreshProgressRunnable <-- ProgressBar
+OnSeekBarChangeListener <-- SeekBar
+
+@enduml
