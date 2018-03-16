@@ -13,11 +13,6 @@
             //信任的自定义CA证书
             <certificates src="@raw/test2" overridePins="true"/>
         </trust-anchors>
-        //cleartextTrafficPermitted属性不详，这里是参考官网添加的
-        <domain-config cleartextTrafficPermitted="true">
-            //子域名
-            <domain includeSubdomains="true">kyfw.12306.cn</domain>
-        </domain-config>
     </domain-config>
 </network-security-config>
 <!--

@@ -266,7 +266,6 @@ public class MainActivity extends AppCompatActivity {
 
                 keyStore.load(ksIn, KEY_STORE_PASSWORD.toCharArray());
                 trustStore.load(tsIn, KEY_STORE_TRUST_PASSWORD.toCharArray());
-                //trustStore.load(null);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -281,17 +280,17 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            InputStream caInput = new BufferedInputStream(context.getResources().getAssets().open("ca-cert.pem"));
-            final Certificate ca;
-            try {
-                ca = cf.generateCertificate(caInput);
-                Log.i("Longer", "ca=" + ((X509Certificate) ca).getSubjectDN());
-                Log.i("Longer", "key=" + ((X509Certificate) ca).getPublicKey());
-            } finally {
-                caInput.close();
-            }
-            trustStore.setCertificateEntry("testkey_desaysv_rn1_nevs_ca",ca);
+//            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+//            InputStream caInput = new BufferedInputStream(context.getResources().getAssets().open("ca-cert.pem"));
+//            final Certificate ca;
+//            try {
+//                ca = cf.generateCertificate(caInput);
+//                Log.i("Longer", "ca=" + ((X509Certificate) ca).getSubjectDN());
+//                Log.i("Longer", "key=" + ((X509Certificate) ca).getPublicKey());
+//            } finally {
+//                caInput.close();
+//            }
+//            trustStore.setCertificateEntry("testkey_desaysv_rn1_nevs_ca",ca);
 
 
 
