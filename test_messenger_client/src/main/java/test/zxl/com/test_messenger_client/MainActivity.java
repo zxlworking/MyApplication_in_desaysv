@@ -21,12 +21,16 @@ import test.zxl.com.test_messenger.data.TestObject;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
+    private static final String ACTION_STOP_SERVICE = "ACTION_STOP_SERVICE";
+
     private static final int MSG_TEST_BASIC = 1;
     private static final int MSG_TEST_OBJECT = 2;
 
     private Button mBtnBaic;
     private Button mBtnObject;
+    private Button mBtnStopServer;
 
+    private IBinder mService;
     private Messenger mServerMessenger;
     private Messenger mClientMessenger = new Messenger(new Handler(){
         @Override
@@ -46,10 +50,24 @@ public class MainActivity extends AppCompatActivity {
                         mTestObject = (TestObject)mObjectData;
                     }
                     Log.d(TAG,"server::MSG_TEST_OBJECT::msg.objct = " + mTestObject);
+//                    new Thread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            Object mTest = null;
+//                            mTest.toString();
+//                        }
+//                    }).start();
                     break;
             }
         }
     });
+
+    private IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient() {
+        @Override
+        public void binderDied() {
+            Log.d(TAG,"mDeathRecipient::binderDied");
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
         mBtnBaic = findViewById(R.id.btn_basic);
         mBtnObject = findViewById(R.id.btn_object);
+        mBtnStopServer = findViewById(R.id.btn_stop_server);
 
         Intent mIntent = new Intent();
         mIntent.setComponent(new ComponentName("test.zxl.com.test_messenger_server","test.zxl.com.test_messenger_server.TestService"));
@@ -106,14 +125,37 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        mBtnStopServer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent mIntent = new Intent(ACTION_STOP_SERVICE);
+                sendBroadcast(mIntent);
+            }
+        });
 
+
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(mService != null){
+            mService.unlinkToDeath(mDeathRecipient,0);
+        }
+        unbindService(mServiceConnection);
     }
 
     ServiceConnection mServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             Log.d(TAG,"client::onServiceConnected");
+            mService = service;
             mServerMessenger = new Messenger(service);
+            try {
+                service.linkToDeath(mDeathRecipient,0);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         }
 
         @Override

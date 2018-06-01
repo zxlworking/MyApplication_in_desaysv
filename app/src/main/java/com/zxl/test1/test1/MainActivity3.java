@@ -20,7 +20,7 @@ public class MainActivity3 extends AppCompatActivity {
         tv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent mIntent = new Intent(MainActivity3.this,MainActivity4.class);
+                Intent mIntent = new Intent(MainActivity3.this,MainActivity1.class);
                 //mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(mIntent);
             }

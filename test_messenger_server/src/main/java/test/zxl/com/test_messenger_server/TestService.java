@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -28,6 +29,9 @@ public class TestService extends Service {
 
     private static final int MSG_TEST_BASIC = 1;
     private static final int MSG_TEST_OBJECT = 2;
+
+    private StopReceiver mStopReceiver;
+    private IBinder mIBinder;
 
     private Messenger mMessenger = new Messenger(new Handler(){
         @Override
@@ -75,15 +79,27 @@ public class TestService extends Service {
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
+
                     break;
             }
         }
     });
 
+    private IBinder.DeathRecipient mDeathRecipient = new IBinder.DeathRecipient() {
+        @Override
+        public void binderDied() {
+            Log.d(TAG,"mDeathRecipient::binderDied");
+        }
+    };
+
     @Override
     public void onCreate() {
         super.onCreate();
         Log.d(TAG,"onCreate");
+
+        mStopReceiver = new StopReceiver();
+        IntentFilter mIntentFilter = new IntentFilter(ACTION_STOP_SERVICE);
+        registerReceiver(mStopReceiver,mIntentFilter);
     }
 
     @Override
@@ -96,12 +112,21 @@ public class TestService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         Log.d(TAG,"onBind");
-        return mMessenger.getBinder();
+        mIBinder = mMessenger.getBinder();
+        try {
+            mIBinder.linkToDeath(mDeathRecipient,0);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return mIBinder;
     }
 
     @Override
     public boolean onUnbind(Intent intent) {
-        Log.d(TAG,"onUnbind");
+        Log.d(TAG,"onUnbind::intent = " + intent);
+        if(mIBinder != null){
+            mIBinder.unlinkToDeath(mDeathRecipient,0);
+        }
         return super.onUnbind(intent);
     }
 
@@ -109,6 +134,10 @@ public class TestService extends Service {
     public void onDestroy() {
         Log.d(TAG,"onDestroy");
         super.onDestroy();
+
+        if(mStopReceiver != null){
+            unregisterReceiver(mStopReceiver);
+        }
     }
 
     class StopReceiver extends BroadcastReceiver{

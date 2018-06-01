@@ -27,4 +27,18 @@ public class MainActivity2 extends AppCompatActivity {
             }
         });
     }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        System.out.println("zxl--->MainActivity2--->onNewIntent");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        System.out.println("zxl--->MainActivity2--->onPause");
+        Intent mIntent = new Intent(this,MainActivity2.class);
+        startActivity(mIntent);
+    }
 }
