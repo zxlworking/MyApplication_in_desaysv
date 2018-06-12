@@ -9,6 +9,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/test_calculate" />
             <option value="$PROJECT_DIR$/test_cpu" />
             <option value="$PROJECT_DIR$/test_dh" />
             <option value="$PROJECT_DIR$/test_http" />
