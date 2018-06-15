@@ -378,7 +378,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public interface IQueryCalculate{
-        @GET("/cgi_calculate/cgi/server_query_calculate.py")
+        @GET("/cgi_server/cgi/server_query_calculate.py")
         public Call<CalculateElementList> queryCalculate(@Query("page") int page, @Query("count") int count);
     }
 }

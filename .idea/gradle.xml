@@ -21,6 +21,7 @@
             <option value="$PROJECT_DIR$/test_opengl" />
             <option value="$PROJECT_DIR$/test_openssl" />
             <option value="$PROJECT_DIR$/test_pause_stop" />
+            <option value="$PROJECT_DIR$/test_qsbk" />
             <option value="$PROJECT_DIR$/test_retrofit" />
           </set>
         </option>

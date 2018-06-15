@@ -16,6 +16,7 @@
       <module fileurl="file://$PROJECT_DIR$/test_opengl/test_opengl.iml" filepath="$PROJECT_DIR$/test_opengl/test_opengl.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_openssl/test_openssl.iml" filepath="$PROJECT_DIR$/test_openssl/test_openssl.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_pause_stop/test_pause_stop.iml" filepath="$PROJECT_DIR$/test_pause_stop/test_pause_stop.iml" />
+      <module fileurl="file://$PROJECT_DIR$/test_qsbk/test_qsbk.iml" filepath="$PROJECT_DIR$/test_qsbk/test_qsbk.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_retrofit/test_retrofit.iml" filepath="$PROJECT_DIR$/test_retrofit/test_retrofit.iml" />
     </modules>
   </component>
