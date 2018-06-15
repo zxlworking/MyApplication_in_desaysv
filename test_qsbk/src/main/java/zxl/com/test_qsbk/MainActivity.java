@@ -1,6 +1,7 @@
 package zxl.com.test_qsbk;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Animatable;
@@ -142,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Fresco.initialize(this);
         setContentView(R.layout.activity_main);
 
         mContext = this;
@@ -350,7 +350,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }else{
                 if(mQSBKViewHolder != null){
-                    QSBKElement mQSBKElement = mQSBKElements.get(position);
+                    final QSBKElement mQSBKElement = mQSBKElements.get(position);
                     Uri mAuthorHeadImgUri = Uri.parse(mQSBKElement.author_head_img);
                     mQSBKViewHolder.mAuthorHeadImg.setImageURI(mAuthorHeadImgUri);
                     mQSBKViewHolder.mAuthorNameTv.setText(mQSBKElement.author_name);
@@ -383,6 +383,17 @@ public class MainActivity extends AppCompatActivity {
                     }
                     mQSBKViewHolder.mVoteNumberTv.setText(String.valueOf(mQSBKElement.vote_number));
                     mQSBKViewHolder.mCommentNumberTv.setText(String.valueOf(mQSBKElement.comment_number));
+
+                    mQSBKViewHolder.mItemView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Gson mGson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+                            String mQSBKElementStr = mGson.toJson(mQSBKElement);
+                            Intent mIntent = new Intent(mContext, QSBKDetailActivity.class);
+                            mIntent.putExtra(QSBKDetailActivity.EXTRA_QSBK_ELEMENT, mQSBKElementStr);
+                            startActivity(mIntent);
+                        }
+                    });
                 }
             }
         }
@@ -424,7 +435,7 @@ public class MainActivity extends AppCompatActivity {
 
     public class QSBKViewHolder extends RecyclerView.ViewHolder{
 
-        private View mItemView;
+        public View mItemView;
         public SimpleDraweeView mAuthorHeadImg;
         public SimpleDraweeView mThumbImg;
         public TextView mAuthorNameTv;

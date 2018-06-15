@@ -61,41 +61,21 @@
         android:layout_height="wrap_content"
         fresco:placeholderImage="@mipmap/ic_launcher"
         android:visibility="gone"/>
-    <LinearLayout
-        android:layout_width="match_parent"
+
+    <TextView
+        android:id="@+id/comment_count"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
         android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-        <TextView
-            android:id="@+id/vote_number_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <TextView
-            android:layout_marginStart="4dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="好笑"/>
-        <TextView
-            android:layout_marginStart="12dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="·"/>
-        <TextView
-            android:id="@+id/comment_number_tv"
-            android:layout_marginStart="12dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-        <TextView
-            android:layout_marginStart="4dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="评论"/>
-    </LinearLayout>
+        android:textSize="24sp"
+        android:textStyle="bold"/>
+
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="1px"
         android:layout_marginTop="8dp"
-        android:src="#000000"/>
+        android:src="#99aa99"/>
+
+
 </LinearLayout>

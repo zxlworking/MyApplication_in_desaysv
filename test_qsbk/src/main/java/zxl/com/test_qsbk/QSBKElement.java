@@ -7,6 +7,7 @@ package zxl.com.test_qsbk;
 public class QSBKElement {
     public static final int SEX_MAN = 0;
     public static final int SEX_FEMALE = 1;
+    public String author_id = "";
     public int author_sex = SEX_MAN;
     public String thumb ="";
     public int author_age = 0;
@@ -35,7 +36,8 @@ public class QSBKElement {
     @Override
     public String toString() {
         return "QSBKElement{" +
-                "author_sex=" + author_sex +
+                "author_head_id ='" + author_id  + '\'' +
+                ", author_sex='" + author_sex + '\'' +
                 ", thumb='" + thumb + '\'' +
                 ", author_age=" + author_age +
                 ", has_thumb=" + has_thumb +
