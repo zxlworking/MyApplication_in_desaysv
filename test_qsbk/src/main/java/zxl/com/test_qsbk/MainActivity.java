@@ -177,7 +177,8 @@ public class MainActivity extends AppCompatActivity {
 
         OkHttpClient mOkHttpClient = new OkHttpClient.Builder().build();
         mRetrofit = new Retrofit.Builder()
-                .baseUrl("http://www.zxltest.cn/")
+                //.baseUrl("http://www.zxltest.cn/")
+                .baseUrl("http://118.25.178.69/")
                 .client(mOkHttpClient)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
