@@ -12,6 +12,8 @@
             <option value="$PROJECT_DIR$/test_calculate" />
             <option value="$PROJECT_DIR$/test_cpu" />
             <option value="$PROJECT_DIR$/test_dh" />
+            <option value="$PROJECT_DIR$/test_glide" />
+            <option value="$PROJECT_DIR$/test_hiai" />
             <option value="$PROJECT_DIR$/test_http" />
             <option value="$PROJECT_DIR$/test_http_cpu" />
             <option value="$PROJECT_DIR$/test_messenger_client" />
