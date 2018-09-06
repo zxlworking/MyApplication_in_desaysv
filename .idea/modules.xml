@@ -7,7 +7,6 @@
       <module fileurl="file://$PROJECT_DIR$/test_calculate/test_calculate.iml" filepath="$PROJECT_DIR$/test_calculate/test_calculate.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_cpu/test_cpu.iml" filepath="$PROJECT_DIR$/test_cpu/test_cpu.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_dh/test_dh.iml" filepath="$PROJECT_DIR$/test_dh/test_dh.iml" />
-      <module fileurl="file://$PROJECT_DIR$/test_glide/test_glide.iml" filepath="$PROJECT_DIR$/test_glide/test_glide.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_hiai/test_hiai.iml" filepath="$PROJECT_DIR$/test_hiai/test_hiai.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_http/test_http.iml" filepath="$PROJECT_DIR$/test_http/test_http.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_http_cpu/test_http_cpu.iml" filepath="$PROJECT_DIR$/test_http_cpu/test_http_cpu.iml" />
@@ -20,6 +19,7 @@
       <module fileurl="file://$PROJECT_DIR$/test_pause_stop/test_pause_stop.iml" filepath="$PROJECT_DIR$/test_pause_stop/test_pause_stop.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_qsbk/test_qsbk.iml" filepath="$PROJECT_DIR$/test_qsbk/test_qsbk.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_retrofit/test_retrofit.iml" filepath="$PROJECT_DIR$/test_retrofit/test_retrofit.iml" />
+      <module fileurl="file://$PROJECT_DIR$/test_weather/test_weather.iml" filepath="$PROJECT_DIR$/test_weather/test_weather.iml" />
     </modules>
   </component>
 </project>
