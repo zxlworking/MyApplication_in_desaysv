@@ -20,6 +20,12 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/address_info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="left"/>
+
+            <TextView
                 android:id="@+id/now_time_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

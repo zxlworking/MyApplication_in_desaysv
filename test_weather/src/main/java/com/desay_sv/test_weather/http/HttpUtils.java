@@ -4,8 +4,10 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.desay_sv.test_weather.http.data.QueryCityResponseBean;
 import com.desay_sv.test_weather.http.data.TodayWeatherResponseBean;
 import com.desay_sv.test_weather.http.listener.NetRequestListener;
+import com.desay_sv.test_weather.utils.Constants;
 import com.zxl.common.DebugUtil;
 
 import java.util.concurrent.TimeUnit;
@@ -30,24 +32,11 @@ public class HttpUtils {
 
     private static Object mLock = new Object();
 
-    private static Retrofit mRetrofit;
-    private static HttpAPI mHttpAPI;
+//    private static Retrofit mRetrofit;
+//    private static HttpAPI mHttpAPI;
 
     private HttpUtils(){
-        OkHttpClient.Builder okBuilder = new OkHttpClient.Builder();
-        okBuilder.connectTimeout(1, TimeUnit.MINUTES);
-        okBuilder.readTimeout(1,TimeUnit.MINUTES);
-        OkHttpClient okHttpClient = okBuilder.build();
 
-        Retrofit.Builder retrofitBuilder = new Retrofit.Builder();
-        mRetrofit = retrofitBuilder
-//                .baseUrl("http://www.zxltest.cn/cgi_server/")
-                .baseUrl("https://www.zxltest.cn/cgi_server/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
-                .client(okHttpClient)
-                .build();
-        mHttpAPI = mRetrofit.create(HttpAPI.class);
     }
 
     public static HttpUtils getInstance(){
@@ -63,11 +52,69 @@ public class HttpUtils {
         return mHttpUtils;
     }
 
-    public void getZHTianQiByCity(Context context, String city, final NetRequestListener listener){
-        DebugUtil.d(TAG,"getZHTianQiByCity::city = " + city);
+    private HttpAPI initBaseUrl(String url){
+        OkHttpClient.Builder okBuilder = new OkHttpClient.Builder();
+        okBuilder.connectTimeout(1, TimeUnit.MINUTES);
+        okBuilder.readTimeout(1,TimeUnit.MINUTES);
+        OkHttpClient okHttpClient = okBuilder.build();
+        Retrofit.Builder retrofitBuilder = new Retrofit.Builder();
+        Retrofit mRetrofit = retrofitBuilder
+//                .baseUrl("http://www.zxltest.cn/cgi_server/")
+                .baseUrl(url)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .client(okHttpClient)
+                .build();
+        HttpAPI mHttpAPI = mRetrofit.create(HttpAPI.class);
+        return mHttpAPI;
+    }
+
+    public void queryCity(Context context, String l, int type, final NetRequestListener listener){
+        DebugUtil.d(TAG,"queryCity::l = " + l + "::type = " + type);
+
+        HttpAPI mHttpAPI = initBaseUrl(Constants.QUERY_CITY_BASE_URL);
 
         if(true){
-            Observable<TodayWeatherResponseBean> observable = mHttpAPI.getZHTianQiByCity(city);
+            Observable<QueryCityResponseBean> observable = mHttpAPI.queryCity(l,type);
+            observable.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<QueryCityResponseBean>() {
+                        @Override
+                        public void onCompleted() {
+                            DebugUtil.d(TAG,"queryCity::onCompleted");
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            DebugUtil.d(TAG,"queryCity::onError::e = " + e);
+                            if(listener != null){
+                                listener.onNetError(e);
+                            }
+                        }
+
+                        @Override
+                        public void onNext(QueryCityResponseBean queryCityResponseBean) {
+                            DebugUtil.d(TAG,"queryCity::onNext::queryCityResponseBean = " + queryCityResponseBean);
+                            if(listener != null){
+                                listener.onSuccess(queryCityResponseBean);
+                            }
+                        }
+                    });
+        }else{
+            DebugUtil.d(TAG,"queryCity::net work error");
+            if(listener != null){
+                listener.onNetError();
+            }
+        }
+    }
+
+    public void getZHTianQiByCity(Context context, String l, final NetRequestListener listener){
+        DebugUtil.d(TAG,"getZHTianQiByCity::l = " + l);
+
+        HttpAPI mHttpAPI = initBaseUrl(Constants.WEATHER_BASE_URL);
+
+        if(true){
+            Observable<TodayWeatherResponseBean> observable = mHttpAPI.getZHTianQiByCity(l);
             observable.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Subscriber<TodayWeatherResponseBean>() {

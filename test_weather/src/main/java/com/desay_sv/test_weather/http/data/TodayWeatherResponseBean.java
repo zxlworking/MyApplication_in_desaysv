@@ -7,6 +7,7 @@ import java.util.List;
  */
 
 public class TodayWeatherResponseBean extends ResponseBaseBean {
+    public String address_info = "";
     public String city_name = "";
     public TodayWeather today_weather;
     public List<TodayWeatherDetail> today_weather_detail;
@@ -16,6 +17,7 @@ public class TodayWeatherResponseBean extends ResponseBaseBean {
         return "TodayWeatherResponseBean{" +
                 "code=" + code +
                 ", desc='" + desc + '\'' +
+                ", address_info='" + address_info + '\'' +
                 ", city_name='" + city_name + '\'' +
                 ", today_weather=" + today_weather +
                 ", today_weather_detail=" + today_weather_detail +
