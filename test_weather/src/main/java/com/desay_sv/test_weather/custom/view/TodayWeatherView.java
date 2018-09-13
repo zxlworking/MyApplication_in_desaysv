@@ -19,6 +19,7 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.desay_sv.test_weather.R;
@@ -125,6 +126,9 @@ public class TodayWeatherView extends CardView {
     private TextView mWindTv;
     private TodayWeatherAirQualityIconView mTodayWeatherAirQualityIconView;
     private TextView mAirQualityTv;
+    private LinearLayout mLimitContentLl;
+    private TodayWeatherLimitIconView mTodayWeatherLimitIconView;
+    private TextView mLimitTv;
 
     private TextView mTodayWeatherDetail1TitleTv;
     private TodayWeatherDetailIconView mTodayWeatherDetail1IconView;
@@ -186,6 +190,9 @@ public class TodayWeatherView extends CardView {
         mWindTv = mContentView.findViewById(R.id.wind_tv);
         mTodayWeatherAirQualityIconView = mContentView.findViewById(R.id.today_weather_air_quality_icon_view);
         mAirQualityTv = mContentView.findViewById(R.id.air_quality_tv);
+        mLimitContentLl = mContentView.findViewById(R.id.limit_content_ll);
+        mTodayWeatherLimitIconView = mContentView.findViewById(R.id.today_weather_limit_icon_view);
+        mLimitTv = mContentView.findViewById(R.id.limit_tv);
 
         mTodayWeatherDetail1TitleTv = mContentView.findViewById(R.id.today_weather_detail_1_title_tv);
         mTodayWeatherDetail1IconView = mContentView.findViewById(R.id.today_weather_detail_1_icon_view);
@@ -261,6 +268,13 @@ public class TodayWeatherView extends CardView {
                 mWindTv.setText(todayWeatherResponseBean.today_weather.wind_direction + " " + todayWeatherResponseBean.today_weather.wind_value);
                 mTodayWeatherAirQualityIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.air_quality_icon_css);
                 mAirQualityTv.setText(todayWeatherResponseBean.today_weather.air_quality);
+                if(todayWeatherResponseBean.today_weather.is_limit == 1){
+                    mLimitContentLl.setVisibility(VISIBLE);
+                    mTodayWeatherLimitIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.limit_icon_css);
+                    mLimitTv.setText(todayWeatherResponseBean.today_weather.limit_content);
+                }else{
+                    mLimitContentLl.setVisibility(INVISIBLE);
+                }
 
                 mTodayWeatherDetail1TitleTv.setText(todayWeatherResponseBean.today_weather_detail.get(0).title);
                 mTodayWeatherDetail1IconView.setTodayWeatherDetailIconCss(todayWeatherResponseBean.today_weather_detail.get(0).weather_icon_css);

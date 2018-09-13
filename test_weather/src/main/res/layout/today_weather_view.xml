@@ -101,23 +101,45 @@
                 <LinearLayout
                     android:layout_width="12dp"
                     android:layout_height="wrap_content"/>
-
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-                    <com.desay_sv.test_weather.custom.view.TodayWeatherWindIconView
-                        android:id="@+id/today_weather_wind_icon_view"
-                        android:layout_width="12dp"
-                        android:layout_height="12dp"/>
-                    <TextView
-                        android:id="@+id/wind_tv"
+                    android:orientation="vertical">
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="12sp"
-                        android:gravity="left"/>
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+                        <com.desay_sv.test_weather.custom.view.TodayWeatherWindIconView
+                            android:id="@+id/today_weather_wind_icon_view"
+                            android:layout_width="12dp"
+                            android:layout_height="12dp"/>
+                        <TextView
+                            android:id="@+id/wind_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:gravity="left"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:id="@+id/limit_content_ll"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+                        <com.desay_sv.test_weather.custom.view.TodayWeatherLimitIconView
+                            android:id="@+id/today_weather_limit_icon_view"
+                            android:layout_width="12dp"
+                            android:layout_height="12dp"/>
+                        <TextView
+                            android:id="@+id/limit_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:gravity="left"/>
+                    </LinearLayout>
                 </LinearLayout>
+
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_weight="1"
