@@ -18,6 +18,9 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.desay_sv.test_weather.event.LocatePermissionSuccessEvent;
 import com.desay_sv.test_weather.event.RequestLocatePermissionEvent;
+import com.desay_sv.test_weather.http.HttpUtils;
+import com.desay_sv.test_weather.http.data.ResponseBaseBean;
+import com.desay_sv.test_weather.http.listener.NetRequestListener;
 import com.desay_sv.test_weather.utils.EventBusUtils;
 import com.zxl.common.DebugUtil;
 

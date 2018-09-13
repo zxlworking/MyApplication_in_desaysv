@@ -1,7 +1,7 @@
 package com.desay_sv.test_weather.http;
 
 
-import com.desay_sv.test_weather.http.data.QueryCityResponseBean;
+import com.desay_sv.test_weather.http.data.QSBKElementList;
 import com.desay_sv.test_weather.http.data.TodayWeatherResponseBean;
 
 import okhttp3.ResponseBody;
@@ -19,8 +19,5 @@ public interface HttpAPI {
     public Observable<TodayWeatherResponseBean> getZHTianQiByCity(@Query("l")String l);
 
     @GET("cgi_qsbk/cgi_qsbk.py")
-    public Observable<ResponseBody> getQSBK(@Query("page")int page);
-
-    @GET("/")
-    public Observable<QueryCityResponseBean> queryCity(@Query("l")String l, @Query("type")int type);
+    public Observable<QSBKElementList> getQSBK(@Query("page")int page);
 }

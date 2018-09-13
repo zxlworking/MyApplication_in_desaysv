@@ -4,7 +4,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import com.desay_sv.test_weather.http.data.QueryCityResponseBean;
+import com.desay_sv.test_weather.http.data.QSBKElementList;
 import com.desay_sv.test_weather.http.data.TodayWeatherResponseBean;
 import com.desay_sv.test_weather.http.listener.NetRequestListener;
 import com.desay_sv.test_weather.utils.Constants;
@@ -69,45 +69,6 @@ public class HttpUtils {
         return mHttpAPI;
     }
 
-    public void queryCity(Context context, String l, int type, final NetRequestListener listener){
-        DebugUtil.d(TAG,"queryCity::l = " + l + "::type = " + type);
-
-        HttpAPI mHttpAPI = initBaseUrl(Constants.QUERY_CITY_BASE_URL);
-
-        if(true){
-            Observable<QueryCityResponseBean> observable = mHttpAPI.queryCity(l,type);
-            observable.subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<QueryCityResponseBean>() {
-                        @Override
-                        public void onCompleted() {
-                            DebugUtil.d(TAG,"queryCity::onCompleted");
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-                            DebugUtil.d(TAG,"queryCity::onError::e = " + e);
-                            if(listener != null){
-                                listener.onNetError(e);
-                            }
-                        }
-
-                        @Override
-                        public void onNext(QueryCityResponseBean queryCityResponseBean) {
-                            DebugUtil.d(TAG,"queryCity::onNext::queryCityResponseBean = " + queryCityResponseBean);
-                            if(listener != null){
-                                listener.onSuccess(queryCityResponseBean);
-                            }
-                        }
-                    });
-        }else{
-            DebugUtil.d(TAG,"queryCity::net work error");
-            if(listener != null){
-                listener.onNetError();
-            }
-        }
-    }
-
     public void getZHTianQiByCity(Context context, String l, final NetRequestListener listener){
         DebugUtil.d(TAG,"getZHTianQiByCity::l = " + l);
 
@@ -141,6 +102,45 @@ public class HttpUtils {
                     });
         }else{
             DebugUtil.d(TAG,"getZHTianQiByCity::net work error");
+            if(listener != null){
+                listener.onNetError();
+            }
+        }
+    }
+
+    public void getQSBK(Context context, int page, final NetRequestListener listener){
+        DebugUtil.d(TAG,"getQSBK::page = " + page);
+
+        HttpAPI mHttpAPI = initBaseUrl(Constants.WEATHER_BASE_URL);
+
+        if(true){
+            Observable<QSBKElementList> observable = mHttpAPI.getQSBK(page);
+            observable.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<QSBKElementList>() {
+                        @Override
+                        public void onCompleted() {
+                            DebugUtil.d(TAG,"getQSBK::onCompleted");
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            DebugUtil.d(TAG,"getQSBK::onError::e = " + e);
+                            if(listener != null){
+                                listener.onNetError(e);
+                            }
+                        }
+
+                        @Override
+                        public void onNext(QSBKElementList qsbkElementList) {
+                            DebugUtil.d(TAG,"getQSBK::onNext::qsbkElementList = " + qsbkElementList);
+                            if(listener != null){
+                                listener.onSuccess(qsbkElementList);
+                            }
+                        }
+                    });
+        }else{
+            DebugUtil.d(TAG,"getQSBK::net work error");
             if(listener != null){
                 listener.onNetError();
             }
