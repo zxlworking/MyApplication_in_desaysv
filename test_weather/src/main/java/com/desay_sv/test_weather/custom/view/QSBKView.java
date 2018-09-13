@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.desay_sv.test_weather.QSBKActivity;
+import com.desay_sv.test_weather.QSBKDetailActivity;
 import com.desay_sv.test_weather.R;
 import com.desay_sv.test_weather.http.HttpUtils;
 import com.desay_sv.test_weather.http.data.QSBKElement;
@@ -166,6 +167,17 @@ public class QSBKView extends CardView {
                 }
                 mVoteNumberTv.setText(String.valueOf(mQSBKElement.vote_number));
                 mCommentNumberTv.setText(String.valueOf(mQSBKElement.comment_number));
+
+                mContentTv.setOnClickListener(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Gson mGson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+                        String mQSBKElementStr = mGson.toJson(mQSBKElement);
+                        Intent mIntent = new Intent(mContext, QSBKDetailActivity.class);
+                        mIntent.putExtra(QSBKDetailActivity.EXTRA_QSBK_ELEMENT, mQSBKElementStr);
+                        mContext.startActivity(mIntent);
+                    }
+                });
 
                 isLoading = false;
             }

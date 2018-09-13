@@ -82,6 +82,7 @@ public class QSBKDetailActivity extends Activity {
                     mLoadErrorView.setVisibility(View.GONE);
 
                     QSBKDetail mTemp = (QSBKDetail) msg.obj;
+                    mRecyclerView.setAdapter(mQSBKDetailAdapter);
                     mQSBKDetailAdapter.setData(mQSBKElement,mTemp);
 
                     isLoading = false;
@@ -121,7 +122,6 @@ public class QSBKDetailActivity extends Activity {
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(mContext);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
         mQSBKDetailAdapter = new QSBKDetailAdapter();
-        mRecyclerView.setAdapter(mQSBKDetailAdapter);
 
         OkHttpClient mOkHttpClient = new OkHttpClient.Builder().build();
         mRetrofit = new Retrofit.Builder()
