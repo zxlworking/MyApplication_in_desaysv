@@ -7,4 +7,12 @@ package com.desay_sv.test_weather.http.data;
 public class ResponseBaseBean {
     public int code;
     public String desc = "";
+
+    @Override
+    public String toString() {
+        return "ResponseBaseBean{" +
+                "code=" + code +
+                ", desc='" + desc + '\'' +
+                '}';
+    }
 }

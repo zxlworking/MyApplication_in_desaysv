@@ -30,6 +30,7 @@ public class TodayWeather {
     public String humidity = "";
     public String wind_value = "";
     public String limit_content = "";
+    public String simple_content = "";
     public int is_limit;
 
     public TodayWeatherTemperatureIconCss temperature_icon_css;
@@ -49,6 +50,7 @@ public class TodayWeather {
                 ", humidity='" + humidity + '\'' +
                 ", wind_value='" + wind_value + '\'' +
                 ", limit_content='" + limit_content + '\'' +
+                ", simple_content='" + simple_content + '\'' +
                 ", is_limit=" + is_limit +
                 ", temperature_icon_css=" + temperature_icon_css +
                 ", humidity_icon_css=" + humidity_icon_css +

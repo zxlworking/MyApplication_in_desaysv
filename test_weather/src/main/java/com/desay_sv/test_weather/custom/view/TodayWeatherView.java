@@ -2,7 +2,9 @@ package com.desay_sv.test_weather.custom.view;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -14,6 +16,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -22,9 +25,11 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.desay_sv.test_weather.CityInfoListActivity;
 import com.desay_sv.test_weather.R;
 import com.desay_sv.test_weather.event.LocatePermissionSuccessEvent;
 import com.desay_sv.test_weather.event.RequestLocatePermissionEvent;
+import com.desay_sv.test_weather.event.SelectCityEvent;
 import com.desay_sv.test_weather.http.HttpUtils;
 import com.desay_sv.test_weather.http.data.ResponseBaseBean;
 import com.desay_sv.test_weather.http.data.TodayWeatherResponseBean;
@@ -49,7 +54,6 @@ public class TodayWeatherView extends CardView {
 
     private Context mContext;
 
-    private View mContentView;
 
 
     private LocationManager mLocationManager;
@@ -88,7 +92,7 @@ public class TodayWeatherView extends CardView {
 //                    e.printStackTrace();
 //                }
                 mLocationInfo = location.getLatitude() + "," + location.getLongitude();
-                getDataFromNet(mLocationInfo);
+                getDataFromNetByLocation(mLocationInfo);
             }
         }
 
@@ -110,12 +114,15 @@ public class TodayWeatherView extends CardView {
 
     private String mLocationInfo = "";
 
+    private View mContentView;
+
     private View mTodayWeatherContentView;
     private View mLoadingView;
     private View mLoadErrorView;
     private TextView mLoadErrorTv;
     private Button mLoadErrorBtn;
 
+    private LinearLayout mAddressInfoLl;
     private TextView mAddressInfo;
     private TextView mNowTimeTv;
     private TodayWeatherTemperatureView mTodayWeatherTemperatureView;
@@ -150,6 +157,8 @@ public class TodayWeatherView extends CardView {
     private TodayWeatherDetailSunIconView mTodayWeatherDetail2SunIconView;
     private TextView mTodayWeatherDetail2SunTimeTv;
 
+    private Toolbar mToolbar;
+
     private boolean isLoading = false;
     private boolean isNeedLoadData = true;
 
@@ -180,6 +189,7 @@ public class TodayWeatherView extends CardView {
         mLoadErrorTv = mContentView.findViewById(R.id.load_error_tv);
         mLoadErrorBtn = mContentView.findViewById(R.id.load_error_btn);
 
+        mAddressInfoLl = mContentView.findViewById(R.id.address_info_ll);
         mAddressInfo = mContentView.findViewById(R.id.address_info);
         mNowTimeTv = mContentView.findViewById(R.id.now_time_tv);
         mTodayWeatherTemperatureView = mContentView.findViewById(R.id.today_weather_temperature_view);
@@ -217,10 +227,18 @@ public class TodayWeatherView extends CardView {
         mLoadErrorBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                getDataFromNet(mLocationInfo);
+                getDataFromNetByLocation(mLocationInfo);
             }
         });
 
+        mAddressInfoLl.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, CityInfoListActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                mContext.startActivity(intent);
+            }
+        });
 
         boolean isNeedStartRequestPermissionActivity = false;
 
@@ -231,6 +249,9 @@ public class TodayWeatherView extends CardView {
 
         DebugUtil.d(TAG,"init::isNeedStartRequestPermissionActivity = " + isNeedStartRequestPermissionActivity);
 
+        mLoadingView.setVisibility(VISIBLE);
+        mLoadErrorView.setVisibility(GONE);
+        mTodayWeatherContentView.setVisibility(INVISIBLE);
         if (isNeedStartRequestPermissionActivity) {
             EventBusUtils.post(new RequestLocatePermissionEvent());
         } else {
@@ -238,8 +259,8 @@ public class TodayWeatherView extends CardView {
         }
     }
 
-    private void getDataFromNet(String l) {
-
+    private void getDataFromNetByLocation(String l) {
+        DebugUtil.d(TAG,"getDataFromNetByLocation::isLoading = " + isLoading);
         if (isLoading) {
             return;
         }
@@ -249,64 +270,18 @@ public class TodayWeatherView extends CardView {
         mLoadErrorView.setVisibility(GONE);
         mTodayWeatherContentView.setVisibility(INVISIBLE);
 
-        HttpUtils.getInstance().getZHTianQiByCity(mContext, l, new NetRequestListener() {
+        HttpUtils.getInstance().getZHTianQiByLocation(mContext, l, new NetRequestListener() {
             @Override
             public void onSuccess(ResponseBaseBean responseBaseBean) {
+                DebugUtil.d(TAG,"onSuccess::responseBaseBean = " + responseBaseBean);
+
                 TodayWeatherResponseBean todayWeatherResponseBean = (TodayWeatherResponseBean) responseBaseBean;
 
                 mLoadingView.setVisibility(GONE);
                 mLoadErrorView.setVisibility(GONE);
                 mTodayWeatherContentView.setVisibility(VISIBLE);
 
-                mAddressInfo.setText(todayWeatherResponseBean.address_info);
-                mNowTimeTv.setText(todayWeatherResponseBean.today_weather.now_time);
-                mTodayWeatherTemperatureView.setTodayWeatherTemperatureIconCss(todayWeatherResponseBean.today_weather.temperature_icon_css);
-                mTemperatureTv.setText(todayWeatherResponseBean.today_weather.temperature + "°C");
-                mTodayWeatherHumidityIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.humidity_icon_css);
-                mHumidityTv.setText("相对湿度 " + todayWeatherResponseBean.today_weather.humidity);
-                mTodayWeatherWindIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.wind_icon_css);
-                mWindTv.setText(todayWeatherResponseBean.today_weather.wind_direction + " " + todayWeatherResponseBean.today_weather.wind_value);
-                mTodayWeatherAirQualityIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.air_quality_icon_css);
-                mAirQualityTv.setText(todayWeatherResponseBean.today_weather.air_quality);
-                if(todayWeatherResponseBean.today_weather.is_limit == 1){
-                    mLimitContentLl.setVisibility(VISIBLE);
-                    mTodayWeatherLimitIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.limit_icon_css);
-                    mLimitTv.setText(todayWeatherResponseBean.today_weather.limit_content);
-                }else{
-                    mLimitContentLl.setVisibility(INVISIBLE);
-                }
-
-                mTodayWeatherDetail1TitleTv.setText(todayWeatherResponseBean.today_weather_detail.get(0).title);
-                mTodayWeatherDetail1IconView.setTodayWeatherDetailIconCss(todayWeatherResponseBean.today_weather_detail.get(0).weather_icon_css);
-                mTodayWeatherDetail1TemperatureTv.setText(todayWeatherResponseBean.today_weather_detail.get(0).temperature + "°C");
-                mTodayWeatherDetail1WeatherTv.setText(todayWeatherResponseBean.today_weather_detail.get(0).weather);
-                String weatherDesc1 = todayWeatherResponseBean.today_weather_detail.get(0).weather_desc;
-                if (!TextUtils.isEmpty(weatherDesc1)) {
-                    mTodayWeatherDetail1WeatherDescTv.setVisibility(VISIBLE);
-                    mTodayWeatherDetail1WeatherDescTv.setText(weatherDesc1);
-                } else {
-                    mTodayWeatherDetail1WeatherDescTv.setVisibility(GONE);
-                }
-                mTodayWeatherDetail1WindIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather_detail.get(0).wind_icon_css);
-                mTodayWeatherDetail1WindTv.setText(todayWeatherResponseBean.today_weather_detail.get(0).wind_direction + " " + todayWeatherResponseBean.today_weather_detail.get(0).wind_value);
-                mTodayWeatherDetail1SunIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather_detail.get(0).sun_icon_css);
-                mTodayWeatherDetail1SunTimeTv.setText(todayWeatherResponseBean.today_weather_detail.get(0).sun_time);
-
-                mTodayWeatherDetail2TitleTv.setText(todayWeatherResponseBean.today_weather_detail.get(1).title);
-                mTodayWeatherDetail2IconView.setTodayWeatherDetailIconCss(todayWeatherResponseBean.today_weather_detail.get(1).weather_icon_css);
-                mTodayWeatherDetail2TemperatureTv.setText(todayWeatherResponseBean.today_weather_detail.get(1).temperature + "°C");
-                mTodayWeatherDetail2WeatherTv.setText(todayWeatherResponseBean.today_weather_detail.get(1).weather);
-                String weatherDesc2 = todayWeatherResponseBean.today_weather_detail.get(1).weather_desc;
-                if (!TextUtils.isEmpty(weatherDesc2)) {
-                    mTodayWeatherDetail2WeatherDescTv.setVisibility(VISIBLE);
-                    mTodayWeatherDetail2WeatherDescTv.setText(weatherDesc2);
-                } else {
-                    mTodayWeatherDetail2WeatherDescTv.setVisibility(GONE);
-                }
-                mTodayWeatherDetail2WindIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather_detail.get(1).wind_icon_css);
-                mTodayWeatherDetail2WindTv.setText(todayWeatherResponseBean.today_weather_detail.get(1).wind_direction + " " + todayWeatherResponseBean.today_weather_detail.get(1).wind_value);
-                mTodayWeatherDetail2SunIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather_detail.get(1).sun_icon_css);
-                mTodayWeatherDetail2SunTimeTv.setText(todayWeatherResponseBean.today_weather_detail.get(1).sun_time);
+                setDataToView(todayWeatherResponseBean);
 
                 isLoading = false;
                 isNeedLoadData = false;
@@ -314,6 +289,7 @@ public class TodayWeatherView extends CardView {
 
             @Override
             public void onNetError() {
+                DebugUtil.d(TAG,"onNetError");
                 mLoadingView.setVisibility(GONE);
                 mLoadErrorView.setVisibility(VISIBLE);
                 mTodayWeatherContentView.setVisibility(INVISIBLE);
@@ -324,6 +300,7 @@ public class TodayWeatherView extends CardView {
 
             @Override
             public void onNetError(Throwable e) {
+                DebugUtil.d(TAG,"onNetError::e = " + e);
                 mLoadingView.setVisibility(GONE);
                 mLoadErrorView.setVisibility(VISIBLE);
                 mTodayWeatherContentView.setVisibility(INVISIBLE);
@@ -334,6 +311,7 @@ public class TodayWeatherView extends CardView {
 
             @Override
             public void onServer(ResponseBaseBean responseBaseBean) {
+                DebugUtil.d(TAG,"onServer::responseBaseBean = " + responseBaseBean);
                 mLoadingView.setVisibility(GONE);
                 mLoadErrorView.setVisibility(VISIBLE);
                 mTodayWeatherContentView.setVisibility(INVISIBLE);
@@ -343,6 +321,125 @@ public class TodayWeatherView extends CardView {
             }
         });
     }
+
+    private void getDataFromNetByCity(String City) {
+        DebugUtil.d(TAG,"getDataFromNetByCity::isLoading = " + isLoading);
+        if (isLoading) {
+            return;
+        }
+        isLoading = true;
+
+        mLoadingView.setVisibility(VISIBLE);
+        mLoadErrorView.setVisibility(GONE);
+        mTodayWeatherContentView.setVisibility(INVISIBLE);
+
+        HttpUtils.getInstance().getZHTianQiByCity(mContext, City, new NetRequestListener() {
+            @Override
+            public void onSuccess(ResponseBaseBean responseBaseBean) {
+                DebugUtil.d(TAG,"onSuccess::responseBaseBean = " + responseBaseBean);
+
+                TodayWeatherResponseBean todayWeatherResponseBean = (TodayWeatherResponseBean) responseBaseBean;
+
+                mLoadingView.setVisibility(GONE);
+                mLoadErrorView.setVisibility(GONE);
+                mTodayWeatherContentView.setVisibility(VISIBLE);
+
+                setDataToView(todayWeatherResponseBean);
+
+                isLoading = false;
+                isNeedLoadData = false;
+            }
+
+            @Override
+            public void onNetError() {
+                DebugUtil.d(TAG,"onNetError");
+                mLoadingView.setVisibility(GONE);
+                mLoadErrorView.setVisibility(VISIBLE);
+                mTodayWeatherContentView.setVisibility(INVISIBLE);
+                mLoadErrorTv.setText(R.string.no_network_tip);
+
+                isLoading = false;
+            }
+
+            @Override
+            public void onNetError(Throwable e) {
+                DebugUtil.d(TAG,"onNetError::e = " + e);
+                mLoadingView.setVisibility(GONE);
+                mLoadErrorView.setVisibility(VISIBLE);
+                mTodayWeatherContentView.setVisibility(INVISIBLE);
+                mLoadErrorTv.setText(mContext.getResources().getString(R.string.network_error_tip, ""));
+
+                isLoading = false;
+            }
+
+            @Override
+            public void onServer(ResponseBaseBean responseBaseBean) {
+                DebugUtil.d(TAG,"onServer::responseBaseBean = " + responseBaseBean);
+                mLoadingView.setVisibility(GONE);
+                mLoadErrorView.setVisibility(VISIBLE);
+                mTodayWeatherContentView.setVisibility(INVISIBLE);
+                mLoadErrorTv.setText(mContext.getResources().getString(R.string.server_error_tip, responseBaseBean.desc));
+
+                isLoading = false;
+            }
+        });
+    }
+
+
+    private void setDataToView(TodayWeatherResponseBean todayWeatherResponseBean) {
+        mToolbar.setTitle(todayWeatherResponseBean.today_weather.simple_content);
+
+        mAddressInfo.setText(todayWeatherResponseBean.address_info);
+        mNowTimeTv.setText(todayWeatherResponseBean.today_weather.now_time);
+        mTodayWeatherTemperatureView.setTodayWeatherTemperatureIconCss(todayWeatherResponseBean.today_weather.temperature_icon_css);
+        mTemperatureTv.setText(todayWeatherResponseBean.today_weather.temperature + "°C");
+        mTodayWeatherHumidityIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.humidity_icon_css);
+        mHumidityTv.setText("相对湿度 " + todayWeatherResponseBean.today_weather.humidity);
+        mTodayWeatherWindIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.wind_icon_css);
+        mWindTv.setText(todayWeatherResponseBean.today_weather.wind_direction + " " + todayWeatherResponseBean.today_weather.wind_value);
+        mTodayWeatherAirQualityIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.air_quality_icon_css);
+        mAirQualityTv.setText(todayWeatherResponseBean.today_weather.air_quality);
+        if(todayWeatherResponseBean.today_weather.is_limit == 1){
+            mLimitContentLl.setVisibility(VISIBLE);
+            mTodayWeatherLimitIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.limit_icon_css);
+            mLimitTv.setText(todayWeatherResponseBean.today_weather.limit_content);
+        }else{
+            mLimitContentLl.setVisibility(INVISIBLE);
+        }
+
+        mTodayWeatherDetail1TitleTv.setText(todayWeatherResponseBean.today_weather_detail.get(0).title);
+        mTodayWeatherDetail1IconView.setTodayWeatherDetailIconCss(todayWeatherResponseBean.today_weather_detail.get(0).weather_icon_css);
+        mTodayWeatherDetail1TemperatureTv.setText(todayWeatherResponseBean.today_weather_detail.get(0).temperature + "°C");
+        mTodayWeatherDetail1WeatherTv.setText(todayWeatherResponseBean.today_weather_detail.get(0).weather);
+        String weatherDesc1 = todayWeatherResponseBean.today_weather_detail.get(0).weather_desc;
+        if (!TextUtils.isEmpty(weatherDesc1)) {
+            mTodayWeatherDetail1WeatherDescTv.setVisibility(VISIBLE);
+            mTodayWeatherDetail1WeatherDescTv.setText(weatherDesc1);
+        } else {
+            mTodayWeatherDetail1WeatherDescTv.setVisibility(GONE);
+        }
+        mTodayWeatherDetail1WindIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather_detail.get(0).wind_icon_css);
+        mTodayWeatherDetail1WindTv.setText(todayWeatherResponseBean.today_weather_detail.get(0).wind_direction + " " + todayWeatherResponseBean.today_weather_detail.get(0).wind_value);
+        mTodayWeatherDetail1SunIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather_detail.get(0).sun_icon_css);
+        mTodayWeatherDetail1SunTimeTv.setText(todayWeatherResponseBean.today_weather_detail.get(0).sun_time);
+
+        mTodayWeatherDetail2TitleTv.setText(todayWeatherResponseBean.today_weather_detail.get(1).title);
+        mTodayWeatherDetail2IconView.setTodayWeatherDetailIconCss(todayWeatherResponseBean.today_weather_detail.get(1).weather_icon_css);
+        mTodayWeatherDetail2TemperatureTv.setText(todayWeatherResponseBean.today_weather_detail.get(1).temperature + "°C");
+        mTodayWeatherDetail2WeatherTv.setText(todayWeatherResponseBean.today_weather_detail.get(1).weather);
+        String weatherDesc2 = todayWeatherResponseBean.today_weather_detail.get(1).weather_desc;
+        if (!TextUtils.isEmpty(weatherDesc2)) {
+            mTodayWeatherDetail2WeatherDescTv.setVisibility(VISIBLE);
+            mTodayWeatherDetail2WeatherDescTv.setText(weatherDesc2);
+        } else {
+            mTodayWeatherDetail2WeatherDescTv.setVisibility(GONE);
+        }
+        mTodayWeatherDetail2WindIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather_detail.get(1).wind_icon_css);
+        mTodayWeatherDetail2WindTv.setText(todayWeatherResponseBean.today_weather_detail.get(1).wind_direction + " " + todayWeatherResponseBean.today_weather_detail.get(1).wind_value);
+        mTodayWeatherDetail2SunIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather_detail.get(1).sun_icon_css);
+        mTodayWeatherDetail2SunTimeTv.setText(todayWeatherResponseBean.today_weather_detail.get(1).sun_time);
+    }
+
 
     public void doLocate() {
         DebugUtil.d(TAG,"doLocate");
@@ -376,17 +473,29 @@ public class TodayWeatherView extends CardView {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
+        DebugUtil.d(TAG,"onAttachedToWindow");
         EventBusUtils.register(this);
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+        DebugUtil.d(TAG,"onDetachedFromWindow");
         EventBusUtils.unregister(this);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onLocatePermissionSuccessEvent(LocatePermissionSuccessEvent event){
         doLocate();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSelectCityEvent(SelectCityEvent event){
+        mToolbar.setTitle(event.mCityInfo.city_name+"的天气");
+        getDataFromNetByCity(event.mCityInfo.city_name);
+    }
+
+    public void setToolbar(Toolbar toolbar){
+        mToolbar = toolbar;
     }
 }

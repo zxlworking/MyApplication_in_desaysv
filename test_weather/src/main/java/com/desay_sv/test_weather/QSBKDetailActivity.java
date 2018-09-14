@@ -118,7 +118,7 @@ public class QSBKDetailActivity extends Activity {
         });
 
 
-        mRecyclerView = findViewById(R.id.recycle_view);
+        mRecyclerView = findViewById(R.id.recycler_view);
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(mContext);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
         mQSBKDetailAdapter = new QSBKDetailAdapter();

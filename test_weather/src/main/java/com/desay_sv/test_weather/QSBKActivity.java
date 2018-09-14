@@ -1,7 +1,9 @@
 package com.desay_sv.test_weather;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.Animatable;
 import android.net.Uri;
@@ -10,10 +12,14 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.AppBarLayout;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,13 +32,21 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.desay_sv.test_weather.custom.view.TodayWeatherView;
+import com.desay_sv.test_weather.event.LocatePermissionSuccessEvent;
+import com.desay_sv.test_weather.event.RequestLocatePermissionEvent;
 import com.desay_sv.test_weather.http.HttpUtils;
 import com.desay_sv.test_weather.http.data.QSBKElement;
 import com.desay_sv.test_weather.http.data.QSBKElementList;
 import com.desay_sv.test_weather.http.data.ResponseBaseBean;
 import com.desay_sv.test_weather.http.listener.NetRequestListener;
+import com.desay_sv.test_weather.utils.EventBusUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.zxl.common.DebugUtil;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,12 +62,19 @@ import retrofit2.http.Query;
 
 public class QSBKActivity extends AppCompatActivity {
 
+    private static final String TAG = "QSBKActivity";
+
     private static final int MSG_FIRST_LOAD_START = 1;
     private static final int MSG_FIRST_LOAD_SUCCESS = 2;
     private static final int MSG_FIRST_LOAD_ERROR = 3;
     private static final int MSG_LOAD_START = 4;
     private static final int MSG_LOAD_SUCCESS = 5;
     private static final int MSG_LOAD_ERROR = 6;
+
+    private String[] permissions = new String[]{
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+    };
 
     private Context mContext;
 
@@ -63,6 +84,10 @@ public class QSBKActivity extends AppCompatActivity {
     private View mLoadingView;
     private View mLoadErrorView;
     private Button mBtnErrorRefresh;
+
+    private AppBarLayout mAppBarLayout;
+    private Toolbar mToolbar;
+    private TodayWeatherView mTodayWeatherView;
 
     private RecyclerView mRecyclerView;
     private CalculateAdapter mCalculateAdapter;
@@ -136,12 +161,19 @@ public class QSBKActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        EventBusUtils.register(this);
+
         setContentView(R.layout.activity_qsbk);
 
         mContext = this;
 
-        mLoadingView = findViewById(R.id.loading_view);
-        mLoadErrorView = findViewById(R.id.load_error_view);
+        mAppBarLayout = findViewById(R.id.main_app_bar);
+        mToolbar = findViewById(R.id.tool_bar);
+        mTodayWeatherView = findViewById(R.id.today_weather_view);
+
+        mLoadingView = findViewById(R.id.qsbk_loading_view);
+        mLoadErrorView = findViewById(R.id.qsbk_load_error_view);
         mBtnErrorRefresh = mLoadErrorView.findViewById(R.id.load_error_btn);
 
         mBtnErrorRefresh.setOnClickListener(new View.OnClickListener() {
@@ -151,7 +183,7 @@ public class QSBKActivity extends AppCompatActivity {
             }
         });
 
-        mRecyclerView = findViewById(R.id.recycle_view);
+        mRecyclerView = findViewById(R.id.recycler_view);
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(mContext);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
         mCalculateAdapter = new CalculateAdapter();
@@ -176,6 +208,9 @@ public class QSBKActivity extends AppCompatActivity {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
         mIQueryQSBK = mRetrofit.create(IQueryQSBK.class);
+
+        mTodayWeatherView.setToolbar(mToolbar);
+        mToolbar.setTitle("今日天气");
 
         loadData(true, 1);
     }
@@ -278,7 +313,42 @@ public class QSBKActivity extends AppCompatActivity {
         }).start();
     }
 
+    private void requestLocatePermission() {
+        if (PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
+                || PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+            ActivityCompat.requestPermissions(this, permissions, 1);
+        } else {
+        }
+    }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        boolean isPermissionOk = true;
+        if (requestCode == 1) {
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    isPermissionOk = false;
+                    break;
+                }
+            }
+        }
+        if(isPermissionOk){
+            EventBusUtils.post(new LocatePermissionSuccessEvent());
+        }
+        DebugUtil.d(TAG,"onRequestPermissionsResult::isPermissionOk = " + isPermissionOk);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBusUtils.unregister(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onRequestDoLocateEvent(RequestLocatePermissionEvent event){
+        requestLocatePermission();
+    }
     public class CalculateAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
         public static final int LOADING_DATA_STATE = 1;
