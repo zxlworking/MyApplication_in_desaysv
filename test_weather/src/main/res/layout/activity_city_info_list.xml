@@ -24,7 +24,8 @@
             <EditText
                 android:id="@+id/search_et"
                 android:layout_width="match_parent"
-                android:layout_height="48dp" />
+                android:layout_height="48dp"
+                android:hint="搜索"/>
         </android.support.v7.widget.CardView>
 
         <android.support.v7.widget.RecyclerView

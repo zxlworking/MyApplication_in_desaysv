@@ -151,6 +151,8 @@ public class CityInfoListActivity extends AppCompatActivity {
                 CityInfoListResponseBean cityInfoListResponseBean = (CityInfoListResponseBean) responseBaseBean;
                 mCityInfoListResponseBean = cityInfoListResponseBean;
 
+                SharePreUtils.getInstance(mContext).saveCityInfoList(cityInfoListResponseBean);
+
                 mLoadingView.setVisibility(GONE);
                 mLoadErrorView.setVisibility(GONE);
                 mCityInfoListContentLl.setVisibility(VISIBLE);
