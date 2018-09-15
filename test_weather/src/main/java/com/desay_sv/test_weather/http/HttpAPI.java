@@ -6,6 +6,8 @@ import com.desay_sv.test_weather.http.data.QSBKElementList;
 import com.desay_sv.test_weather.http.data.TodayWeatherResponseBean;
 
 import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Response;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 import rx.Observable;
@@ -21,6 +23,7 @@ public interface HttpAPI {
 
     @GET("cgi_weather/test3.py")
     public Observable<TodayWeatherResponseBean> getZHTianQiByCity(@Query("city")String city);
+//    public Call<ResponseBody> getZHTianQiByCity(@Query("city")String city);
 
     @GET("cgi_weather/city_list.py")
     public Observable<CityInfoListResponseBean> getCityInfoList();

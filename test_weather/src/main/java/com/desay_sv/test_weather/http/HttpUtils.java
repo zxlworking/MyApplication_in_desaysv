@@ -11,9 +11,14 @@ import com.desay_sv.test_weather.http.listener.NetRequestListener;
 import com.desay_sv.test_weather.utils.Constants;
 import com.zxl.common.DebugUtil;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -107,6 +112,23 @@ public class HttpUtils {
         DebugUtil.d(TAG,"getZHTianQiByCity::city = " + city);
 
         if(isNetworkAvailable(context)){
+//            Call<ResponseBody> call = mHttpAPI.getZHTianQiByCity(city);
+//            call.enqueue(new Callback<ResponseBody>() {
+//                @Override
+//                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                    try {
+//                        String s = new String(response.body().bytes());
+//                        DebugUtil.d(TAG,"getZHTianQiByCity::s = " + s);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                }
+//            });
             Observable<TodayWeatherResponseBean> observable = mHttpAPI.getZHTianQiByCity(city);
             observable.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
