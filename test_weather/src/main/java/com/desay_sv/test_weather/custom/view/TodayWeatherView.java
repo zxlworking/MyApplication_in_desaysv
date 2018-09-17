@@ -393,14 +393,39 @@ public class TodayWeatherView extends CardView {
         mNowTimeTv.setText(todayWeatherResponseBean.today_weather.now_time);
         mTodayWeatherTemperatureView.setTodayWeatherTemperatureIconCss(todayWeatherResponseBean.today_weather.temperature_icon_css);
         mTemperatureTv.setText(todayWeatherResponseBean.today_weather.temperature + "°C");
-        mTodayWeatherHumidityIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.humidity_icon_css);
-        mHumidityTv.setText("相对湿度 " + todayWeatherResponseBean.today_weather.humidity);
-        mTodayWeatherWindIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.wind_icon_css);
-        mWindTv.setText(todayWeatherResponseBean.today_weather.wind_direction + " " + todayWeatherResponseBean.today_weather.wind_value);
-        mTodayWeatherAirQualityIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.air_quality_icon_css);
-        mAirQualityTv.setText(todayWeatherResponseBean.today_weather.air_quality);
+        if(todayWeatherResponseBean.today_weather.is_h == 1){
+            mHumidityTv.setVisibility(VISIBLE);
+            mTodayWeatherHumidityIconView.setVisibility(VISIBLE);
+
+            mHumidityTv.setText("相对湿度 " + todayWeatherResponseBean.today_weather.humidity);
+            mTodayWeatherHumidityIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.humidity_icon_css);
+        }else {
+            mHumidityTv.setVisibility(INVISIBLE);
+            mTodayWeatherHumidityIconView.setVisibility(INVISIBLE);
+        }
+        if(todayWeatherResponseBean.today_weather.is_w == 1) {
+            mTodayWeatherWindIconView.setVisibility(VISIBLE);
+            mWindTv.setVisibility(VISIBLE);
+
+            mTodayWeatherWindIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.wind_icon_css);
+            mWindTv.setText(todayWeatherResponseBean.today_weather.wind_direction + " " + todayWeatherResponseBean.today_weather.wind_value);
+        }else{
+            mTodayWeatherWindIconView.setVisibility(INVISIBLE);
+            mWindTv.setVisibility(INVISIBLE);
+        }
+        if(todayWeatherResponseBean.today_weather.is_pol == 1) {
+            mTodayWeatherAirQualityIconView.setVisibility(VISIBLE);
+            mAirQualityTv.setVisibility(VISIBLE);
+
+            mTodayWeatherAirQualityIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.air_quality_icon_css);
+            mAirQualityTv.setText(todayWeatherResponseBean.today_weather.air_quality);
+        }else{
+            mTodayWeatherAirQualityIconView.setVisibility(INVISIBLE);
+            mAirQualityTv.setVisibility(INVISIBLE);
+        }
         if(todayWeatherResponseBean.today_weather.is_limit == 1){
             mLimitContentLl.setVisibility(VISIBLE);
+
             mTodayWeatherLimitIconView.setTodayWeatherHumidityIconCss(todayWeatherResponseBean.today_weather.limit_icon_css);
             mLimitTv.setText(todayWeatherResponseBean.today_weather.limit_content);
         }else{

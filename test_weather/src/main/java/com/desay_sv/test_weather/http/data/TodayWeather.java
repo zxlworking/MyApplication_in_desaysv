@@ -6,19 +6,19 @@ package com.desay_sv.test_weather.http.data;
 
 public class TodayWeather {
     /*
-        "today_weather":{
-        "now_time":"18:45 实况",
-        "temperature":"25",
+        "now_time":"17:40 实况",
+        "temperature":"24",
+        "is_w":1,
+        "simple_content":"周一 多云转阴 21/26°C",
+        "wind_direction":"东北风",
+        "air_quality":"暂无数据",
+        "humidity":"83%",
         "humidity_icon_css":Object{...},
-        "wind_direction":"西南风",
-        "air_quality":"87良",
-        "air_quality_icon_css":Object{...},
-        "humidity":"61%",
-        "limit_icon_css":Object{...},
+        "is_limit":0,
         "wind_icon_css":Object{...},
-        "limit_content":"限行1和6",
-        "is_limit":1,
-        "wind_value":"1级",
+        "is_h":1,
+        "wind_value":"2级",
+        "is_pol":0,
         "temperature_icon_css":Object{...}
     },
     */
@@ -31,6 +31,9 @@ public class TodayWeather {
     public String wind_value = "";
     public String limit_content = "";
     public String simple_content = "";
+    public int is_w;
+    public int is_h;
+    public int is_pol;
     public int is_limit;
 
     public TodayWeatherTemperatureIconCss temperature_icon_css;
@@ -51,6 +54,9 @@ public class TodayWeather {
                 ", wind_value='" + wind_value + '\'' +
                 ", limit_content='" + limit_content + '\'' +
                 ", simple_content='" + simple_content + '\'' +
+                ", is_w=" + is_w +
+                ", is_h=" + is_h +
+                ", is_pol=" + is_pol +
                 ", is_limit=" + is_limit +
                 ", temperature_icon_css=" + temperature_icon_css +
                 ", humidity_icon_css=" + humidity_icon_css +
