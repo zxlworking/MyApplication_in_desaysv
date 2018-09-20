@@ -1,26 +1,30 @@
 package com.desay_sv.test_weather;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Rect;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.ImageView;
+import android.support.v7.widget.Toolbar;
+import android.view.View;
+import android.widget.FrameLayout;
 
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.transition.Transition;
 import com.desay_sv.test_weather.event.LocatePermissionSuccessEvent;
 import com.desay_sv.test_weather.event.RequestLocatePermissionEvent;
+import com.desay_sv.test_weather.event.SelectLeftMenuEvent;
+import com.desay_sv.test_weather.fragment.LeftMenuFragment;
+import com.desay_sv.test_weather.fragment.QSBKFragment;
+import com.desay_sv.test_weather.fragment.TaoBaoAnchorFragment;
 import com.desay_sv.test_weather.http.HttpUtils;
-import com.desay_sv.test_weather.http.data.ResponseBaseBean;
-import com.desay_sv.test_weather.http.listener.NetRequestListener;
+import com.desay_sv.test_weather.utils.Constants;
 import com.desay_sv.test_weather.utils.EventBusUtils;
 import com.zxl.common.DebugUtil;
 
@@ -31,51 +35,116 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
+    private Context mContext;
+
     private String[] permissions = new String[]{
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION
     };
 
-    private ImageView img1;
-    private ImageView img2;
+    private Toolbar mToolbar;
+    private DrawerLayout mDrawerLayout;
+    private FrameLayout mLeftMenuView;
 
-    private SimpleTarget<Bitmap> mBitmapSimpleTarget1 = new SimpleTarget<Bitmap>() {
-        @Override
-        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-            img1.setImageBitmap(resource);
-            GlideApp.with(MainActivity.this).asBitmap().load("http://i.tq121.com.cn/i/weather2015/png/blue80.png").into(mBitmapSimpleTarget2);
-        }
-    };
+    private ActionBarDrawerToggle mActionBarDrawerToggle;
 
-    private SimpleTarget<Bitmap> mBitmapSimpleTarget2 = new SimpleTarget<Bitmap>() {
-        @Override
-        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-            Bitmap bitmap = Bitmap.createBitmap(80,80, Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(bitmap);
-
-            Rect rectRes = new Rect(160, 0,160 + 80, 80);
-            Rect rectDst = new Rect(0,0,bitmap.getWidth(), bitmap.getHeight());
-
-            canvas.drawBitmap(resource,rectRes,rectDst,new Paint());
-
-            img2.setImageBitmap(bitmap);
-        }
-    };
+    private LeftMenuFragment mLeftMenuFragment;
+    private QSBKFragment mQSBKFragment;
+    private TaoBaoAnchorFragment mTaoBaoAnchorFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        EventBusUtils.register(this);
-
-        DebugUtil.d(TAG,"getInstance");
-
         setContentView(R.layout.activity_main);
 
-        img1 = findViewById(R.id.img1);
-        img2 = findViewById(R.id.img2);
+        DebugUtil.d(TAG,"onCreate");
 
-        //GlideApp.with(this).asBitmap().load("http://i.tq121.com.cn/i/weather2015/png/blue80.png").into(mBitmapSimpleTarget1);
+        mContext = this;
+        EventBusUtils.register(this);
+
+        mToolbar = findViewById(R.id.custom_tool_bar);
+
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        mLeftMenuView = findViewById(R.id.left_menu_view);
+
+        mToolbar.setTitle("Toolbar");//设置Toolbar标题
+        mToolbar.setTitleTextColor(Color.parseColor("#ffffff")); //设置标题颜色
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setHomeButtonEnabled(true); //设置返回键可用
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+
+        mActionBarDrawerToggle = new ActionBarDrawerToggle(this,mDrawerLayout,mToolbar,R.string.drawer_open,R.string.drawer_close){
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+            }
+        };
+        mActionBarDrawerToggle.syncState();
+        mDrawerLayout.addDrawerListener(mActionBarDrawerToggle);
+
+        showLeftMenuFragment();
+
+        showQSBKFragment();
+
+        mLeftMenuFragment.setToolbar(mToolbar);
+
+    }
+
+    private void showLeftMenuFragment() {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        if(null == mLeftMenuFragment){
+            mLeftMenuFragment = (LeftMenuFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.LeftMenuFragment");
+            fragmentTransaction.add(R.id.left_menu_view,mLeftMenuFragment);
+        }else{
+            fragmentTransaction.show(mLeftMenuFragment);
+        }
+        fragmentTransaction.commit();
+    }
+
+    private void showQSBKFragment() {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        if(null == mQSBKFragment){
+            mQSBKFragment = (QSBKFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.QSBKFragment");
+            fragmentTransaction.add(R.id.container_view,mQSBKFragment);
+        }else{
+            fragmentTransaction.show(mQSBKFragment);
+        }
+        fragmentTransaction.commit();
+    }
+
+    private void hideQSBKFragment() {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        if(mQSBKFragment != null){
+            fragmentTransaction.hide(mQSBKFragment);
+        }
+        fragmentTransaction.commit();
+    }
+
+    private void showTaoBaoAnchorFragment() {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        if(null == mTaoBaoAnchorFragment){
+            mTaoBaoAnchorFragment = (TaoBaoAnchorFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.TaoBaoAnchorFragment");
+            fragmentTransaction.add(R.id.container_view,mTaoBaoAnchorFragment);
+        }else{
+            fragmentTransaction.show(mTaoBaoAnchorFragment);
+        }
+        fragmentTransaction.commit();
+    }
+
+    private void hideTaoBaoAnchorFragment() {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        if(mTaoBaoAnchorFragment != null){
+            fragmentTransaction.hide(mTaoBaoAnchorFragment);
+        }
+        fragmentTransaction.commit();
     }
 
     private void requestLocatePermission() {
@@ -108,10 +177,28 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         EventBusUtils.unregister(this);
+
+        mDrawerLayout.removeDrawerListener(mActionBarDrawerToggle);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRequestDoLocateEvent(RequestLocatePermissionEvent event){
         requestLocatePermission();
     }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onSelectLeftMenuEvent(SelectLeftMenuEvent event){
+        mDrawerLayout.closeDrawer(mLeftMenuView,true);
+        switch (event.mPosition){
+            case Constants.LEFT_MENU_POSITION_1:
+                hideTaoBaoAnchorFragment();
+                showQSBKFragment();
+                break;
+            case Constants.LEFT_MENU_POSITION_2:
+                hideQSBKFragment();
+                showTaoBaoAnchorFragment();
+                break;
+        }
+    }
+
 }

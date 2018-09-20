@@ -15,7 +15,7 @@
             android:layout_width="0dp"
             android:layout_weight="2.5"
             android:layout_height="wrap_content"
-            android:padding="8dp"
+            android:padding="6dp"
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
@@ -83,7 +83,7 @@
                             android:id="@+id/humidity_tv"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:gravity="left"/>
                     </LinearLayout>
                     <LinearLayout
@@ -99,14 +99,14 @@
                             android:id="@+id/air_quality_tv"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:gravity="left"/>
                     </LinearLayout>
                 </LinearLayout>
 
 
                 <LinearLayout
-                    android:layout_width="12dp"
+                    android:layout_width="6dp"
                     android:layout_height="wrap_content"/>
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -125,7 +125,7 @@
                             android:id="@+id/wind_tv"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:gravity="left"/>
                     </LinearLayout>
                     <LinearLayout
@@ -142,7 +142,7 @@
                             android:id="@+id/limit_tv"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textSize="12sp"
+                            android:textSize="10sp"
                             android:gravity="left"/>
                     </LinearLayout>
                 </LinearLayout>
@@ -398,12 +398,14 @@
     </LinearLayout>
 
     <include
+        android:id="@+id/today_weather_loading_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         layout="@layout/loading_view"
         android:visibility="gone"/>
     <include
+        android:id="@+id/today_weather_load_error_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

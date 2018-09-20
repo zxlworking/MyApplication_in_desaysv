@@ -62,35 +62,6 @@ public class TodayWeatherView extends CardView {
         public void onLocationChanged(Location location) {
             DebugUtil.d(TAG, "onLocationChanged::isNeedLoadData = " + isNeedLoadData + "::location = " + location);
             if (isNeedLoadData) {
-//                HttpUtils.getInstance().queryCity(mContext, location.getLatitude() + "," + location.getLongitude(), 100, new NetRequestListener() {
-//                    @Override
-//                    public void onSuccess(ResponseBaseBean responseBaseBean) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onNetError() {
-//
-//                    }
-//
-//                    @Override
-//                    public void onNetError(Throwable e) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onServer(ResponseBaseBean responseBaseBean) {
-//
-//                    }
-//                });
-//                Geocoder gc = new Geocoder(mContext, Locale.getDefault());
-//                try {
-//                    List<Address> result = gc.getFromLocation(location.getLatitude(),
-//                            location.getLongitude(), 1);
-//                    DebugUtil.d(TAG, "onLocationChanged::result = " + result);
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
                 mLocationInfo = location.getLatitude() + "," + location.getLongitude();
                 getDataFromNetByLocation(mLocationInfo);
             }
@@ -184,10 +155,10 @@ public class TodayWeatherView extends CardView {
         mContentView = LayoutInflater.from(context).inflate(R.layout.today_weather_view, this);
 
         mTodayWeatherContentView = mContentView.findViewById(R.id.today_weather_content_view);
-        mLoadingView = mContentView.findViewById(R.id.loading_view);
-        mLoadErrorView = mContentView.findViewById(R.id.load_error_view);
-        mLoadErrorTv = mContentView.findViewById(R.id.load_error_tv);
-        mLoadErrorBtn = mContentView.findViewById(R.id.load_error_btn);
+        mLoadingView = mContentView.findViewById(R.id.today_weather_loading_view);
+        mLoadErrorView = mContentView.findViewById(R.id.today_weather_load_error_view);
+        mLoadErrorTv = mLoadErrorView.findViewById(R.id.load_error_tv);
+        mLoadErrorBtn = mLoadErrorView.findViewById(R.id.load_error_btn);
 
         mAddressInfoLl = mContentView.findViewById(R.id.address_info_ll);
         mAddressInfo = mContentView.findViewById(R.id.address_info);
@@ -256,6 +227,8 @@ public class TodayWeatherView extends CardView {
             EventBusUtils.post(new RequestLocatePermissionEvent());
         } else {
             doLocate();
+//            mLocationInfo = "31.950454,118.809312";
+//            getDataFromNetByLocation(mLocationInfo);
         }
     }
 
@@ -387,7 +360,7 @@ public class TodayWeatherView extends CardView {
 
 
     private void setDataToView(TodayWeatherResponseBean todayWeatherResponseBean) {
-        mToolbar.setTitle(todayWeatherResponseBean.today_weather.simple_content);
+        setToolbarTitle(todayWeatherResponseBean.today_weather.simple_content);
 
         mAddressInfo.setText(todayWeatherResponseBean.address_info);
         mNowTimeTv.setText(todayWeatherResponseBean.today_weather.now_time);
@@ -516,11 +489,19 @@ public class TodayWeatherView extends CardView {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSelectCityEvent(SelectCityEvent event){
-        mToolbar.setTitle(event.mCityInfo.city_name+"的天气");
+        setToolbarTitle(event.mCityInfo.city_name+"的天气");
         getDataFromNetByCity(event.mCityInfo.city_name);
     }
 
     public void setToolbar(Toolbar toolbar){
         mToolbar = toolbar;
+    }
+
+    public void setToolbarTitle(String s){
+        if(mToolbar != null){
+            //mToolbar.setTitle(s);
+            TextView tv = mToolbar.findViewById(R.id.toolbar_title);
+            tv.setText(s);
+        }
     }
 }

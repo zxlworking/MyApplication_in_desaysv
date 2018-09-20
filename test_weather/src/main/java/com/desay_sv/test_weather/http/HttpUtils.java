@@ -6,6 +6,7 @@ import android.net.NetworkInfo;
 
 import com.desay_sv.test_weather.http.data.CityInfoListResponseBean;
 import com.desay_sv.test_weather.http.data.QSBKElementList;
+import com.desay_sv.test_weather.http.data.TaoBaoAnchorListResponseBean;
 import com.desay_sv.test_weather.http.data.TodayWeatherResponseBean;
 import com.desay_sv.test_weather.http.listener.NetRequestListener;
 import com.desay_sv.test_weather.utils.Constants;
@@ -75,6 +76,7 @@ public class HttpUtils {
         DebugUtil.d(TAG,"getZHTianQiByLocation::l = " + l);
 
         if(isNetworkAvailable(context)){
+//        if(true){
             Observable<TodayWeatherResponseBean> observable = mHttpAPI.getZHTianQiByLocation(l);
             observable.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -194,6 +196,44 @@ public class HttpUtils {
                     });
         }else{
             DebugUtil.d(TAG,"getCityInfoList::net work error");
+            if(listener != null){
+                listener.onNetError();
+            }
+        }
+    }
+
+    public void getTaoBaoAnchor(Context context,int page, final NetRequestListener listener){
+        DebugUtil.d(TAG,"getTaoBaoAnchor");
+
+        if(isNetworkAvailable(context)){
+//        if(true){
+            Observable<TaoBaoAnchorListResponseBean> observable = mHttpAPI.getTaoBaoAnchor(page);
+            observable.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<TaoBaoAnchorListResponseBean>() {
+                        @Override
+                        public void onCompleted() {
+                            DebugUtil.d(TAG,"getTaoBaoAnchor::onCompleted");
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            DebugUtil.d(TAG,"getTaoBaoAnchor::onError::e = " + e);
+                            if(listener != null){
+                                listener.onNetError(e);
+                            }
+                        }
+
+                        @Override
+                        public void onNext(TaoBaoAnchorListResponseBean taoBaoAnchorListResponseBean) {
+                            DebugUtil.d(TAG,"getTaoBaoAnchor::onNext::taoBaoAnchorListResponseBean = " + taoBaoAnchorListResponseBean);
+                            if(listener != null){
+                                listener.onSuccess(taoBaoAnchorListResponseBean);
+                            }
+                        }
+                    });
+        }else{
+            DebugUtil.d(TAG,"getTaoBaoAnchor::net work error");
             if(listener != null){
                 listener.onNetError();
             }

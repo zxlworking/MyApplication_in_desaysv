@@ -6,4 +6,7 @@
     <string name="no_network_tip">无网络连接</string>
     <string name="network_error_tip">网络请求失败%1$s</string>
     <string name="server_error_tip">服务端错误%1$s</string>
+
+    <string name="drawer_open">打开</string>
+    <string name="drawer_close">关闭</string>
 </resources>
