@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.text.TextUtils;
 
 import com.desay_sv.test_weather.http.data.CityInfoListResponseBean;
+import com.desay_sv.test_weather.http.data.UserInfoResponseBean;
 
 /**
  * Created by zxl on 2018/9/14.
@@ -47,6 +48,21 @@ public class SharePreUtils {
             return null;
         }else{
             return CommonUtils.mGson.fromJson(str,CityInfoListResponseBean.class);
+        }
+    }
+
+    public void saveUserInfo(UserInfoResponseBean userInfoResponseBean){
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putString("UserInfo",CommonUtils.mGson.toJson(userInfoResponseBean));
+        editor.commit();
+    }
+
+    public UserInfoResponseBean getUserInfo(){
+        String str = mSharedPreferences.getString("UserInfo","");
+        if(TextUtils.isEmpty(str)){
+            return null;
+        }else{
+            return CommonUtils.mGson.fromJson(str,UserInfoResponseBean.class);
         }
     }
 

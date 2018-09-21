@@ -8,6 +8,7 @@ import com.desay_sv.test_weather.http.data.CityInfoListResponseBean;
 import com.desay_sv.test_weather.http.data.QSBKElementList;
 import com.desay_sv.test_weather.http.data.TaoBaoAnchorListResponseBean;
 import com.desay_sv.test_weather.http.data.TodayWeatherResponseBean;
+import com.desay_sv.test_weather.http.data.UserInfoResponseBean;
 import com.desay_sv.test_weather.http.listener.NetRequestListener;
 import com.desay_sv.test_weather.utils.Constants;
 import com.zxl.common.DebugUtil;
@@ -23,6 +24,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Query;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -75,6 +77,25 @@ public class HttpUtils {
     public void getZHTianQiByLocation(Context context, String l, final NetRequestListener listener){
         DebugUtil.d(TAG,"getZHTianQiByLocation::l = " + l);
 
+//        if(isNetworkAvailable(context)) {
+//            Call<ResponseBody> call = mHttpAPI.getZHTianQiByLocation(l);
+//            call.enqueue(new Callback<ResponseBody>() {
+//                @Override
+//                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                    try {
+//                        String s = new String(response.body().bytes());
+//                        DebugUtil.d(TAG, "getZHTianQiByLocation::s = " + s);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                }
+//            });
+//        }
         if(isNetworkAvailable(context)){
 //        if(true){
             Observable<TodayWeatherResponseBean> observable = mHttpAPI.getZHTianQiByLocation(l);
@@ -203,10 +224,28 @@ public class HttpUtils {
     }
 
     public void getTaoBaoAnchor(Context context,int page, final NetRequestListener listener){
-        DebugUtil.d(TAG,"getTaoBaoAnchor");
+        DebugUtil.d(TAG,"getTaoBaoAnchor::page = " + page);
 
-        if(isNetworkAvailable(context)){
-//        if(true){
+//        if(isNetworkAvailable(context)){
+//            Call<ResponseBody> call = mHttpAPI.getTaoBaoAnchor(page);
+//            call.enqueue(new Callback<ResponseBody>() {
+//                @Override
+//                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                    try {
+//                        String s = new String(response.body().bytes());
+//                        DebugUtil.d(TAG,"getTaoBaoAnchor::s = " + s);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                }
+//            });
+
+        if(true){
             Observable<TaoBaoAnchorListResponseBean> observable = mHttpAPI.getTaoBaoAnchor(page);
             observable.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
@@ -271,6 +310,63 @@ public class HttpUtils {
                     });
         }else{
             DebugUtil.d(TAG,"getQSBK::net work error");
+            if(listener != null){
+                listener.onNetError();
+            }
+        }
+    }
+
+    public void register(Context context, String user_operator, String user_info, final NetRequestListener listener){
+        DebugUtil.d(TAG,"register::user_operator = " + user_operator + "::user_info = " + user_info);
+
+//        if(isNetworkAvailable(context)) {
+//            Call<ResponseBody> call = mHttpAPI.register(user_operator,user_info);
+//            call.enqueue(new Callback<ResponseBody>() {
+//                @Override
+//                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                    try {
+//                        String s = new String(response.body().bytes());
+//                        DebugUtil.d(TAG, "register::s = " + s);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                }
+//            });
+//        }
+
+        if(isNetworkAvailable(context)){
+            Observable<UserInfoResponseBean> observable = mHttpAPI.register(user_operator,user_info);
+            observable.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<UserInfoResponseBean>() {
+                        @Override
+                        public void onCompleted() {
+                            DebugUtil.d(TAG,"register::onCompleted");
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            DebugUtil.d(TAG,"register::onError::e = " + e);
+                            if(listener != null){
+                                listener.onNetError(e);
+                            }
+                        }
+
+                        @Override
+                        public void onNext(UserInfoResponseBean userInfoResponseBean) {
+                            DebugUtil.d(TAG,"register::onNext::userInfoResponseBean = " + userInfoResponseBean);
+                            if(listener != null){
+                                listener.onSuccess(userInfoResponseBean);
+                            }
+                        }
+                    });
+        }else{
+            DebugUtil.d(TAG,"register::net work error");
             if(listener != null){
                 listener.onNetError();
             }

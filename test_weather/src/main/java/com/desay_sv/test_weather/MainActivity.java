@@ -20,10 +20,10 @@ import android.widget.FrameLayout;
 import com.desay_sv.test_weather.event.LocatePermissionSuccessEvent;
 import com.desay_sv.test_weather.event.RequestLocatePermissionEvent;
 import com.desay_sv.test_weather.event.SelectLeftMenuEvent;
+import com.desay_sv.test_weather.fragment.AccountFragment;
 import com.desay_sv.test_weather.fragment.LeftMenuFragment;
 import com.desay_sv.test_weather.fragment.QSBKFragment;
 import com.desay_sv.test_weather.fragment.TaoBaoAnchorFragment;
-import com.desay_sv.test_weather.http.HttpUtils;
 import com.desay_sv.test_weather.utils.Constants;
 import com.desay_sv.test_weather.utils.EventBusUtils;
 import com.zxl.common.DebugUtil;
@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     private LeftMenuFragment mLeftMenuFragment;
     private QSBKFragment mQSBKFragment;
     private TaoBaoAnchorFragment mTaoBaoAnchorFragment;
+    private AccountFragment mAccountFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,6 +148,25 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.commit();
     }
 
+    private void showAccountFragment() {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        if(null == mAccountFragment){
+            mAccountFragment = (AccountFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.AccountFragment");
+            fragmentTransaction.add(R.id.container_view,mAccountFragment);
+        }else{
+            fragmentTransaction.show(mAccountFragment);
+        }
+        fragmentTransaction.commit();
+    }
+
+    private void hideAccountFragment() {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        if(mAccountFragment != null){
+            fragmentTransaction.hide(mAccountFragment);
+        }
+        fragmentTransaction.commit();
+    }
+
     private void requestLocatePermission() {
         if (PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
                 || PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
@@ -190,13 +210,20 @@ public class MainActivity extends AppCompatActivity {
     public void onSelectLeftMenuEvent(SelectLeftMenuEvent event){
         mDrawerLayout.closeDrawer(mLeftMenuView,true);
         switch (event.mPosition){
-            case Constants.LEFT_MENU_POSITION_1:
+            case Constants.LEFT_MENU_POSITION_0:
                 hideTaoBaoAnchorFragment();
+                hideAccountFragment();
                 showQSBKFragment();
+                break;
+            case Constants.LEFT_MENU_POSITION_1:
+                hideQSBKFragment();
+                hideAccountFragment();
+                showTaoBaoAnchorFragment();
                 break;
             case Constants.LEFT_MENU_POSITION_2:
                 hideQSBKFragment();
-                showTaoBaoAnchorFragment();
+                hideTaoBaoAnchorFragment();
+                showAccountFragment();
                 break;
         }
     }

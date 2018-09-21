@@ -265,7 +265,7 @@ public class QSBKActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onServer(ResponseBaseBean responseBaseBean) {
+            public void onServerError(ResponseBaseBean responseBaseBean) {
                 if(isFirstLoad){
                     mHandler.sendEmptyMessage(MSG_FIRST_LOAD_ERROR);
                 }else{

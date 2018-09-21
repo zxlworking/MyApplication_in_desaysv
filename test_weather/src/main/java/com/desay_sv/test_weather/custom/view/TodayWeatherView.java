@@ -283,8 +283,8 @@ public class TodayWeatherView extends CardView {
             }
 
             @Override
-            public void onServer(ResponseBaseBean responseBaseBean) {
-                DebugUtil.d(TAG,"onServer::responseBaseBean = " + responseBaseBean);
+            public void onServerError(ResponseBaseBean responseBaseBean) {
+                DebugUtil.d(TAG,"onServerError::responseBaseBean = " + responseBaseBean);
                 mLoadingView.setVisibility(GONE);
                 mLoadErrorView.setVisibility(VISIBLE);
                 mTodayWeatherContentView.setVisibility(INVISIBLE);
@@ -346,8 +346,8 @@ public class TodayWeatherView extends CardView {
             }
 
             @Override
-            public void onServer(ResponseBaseBean responseBaseBean) {
-                DebugUtil.d(TAG,"onServer::responseBaseBean = " + responseBaseBean);
+            public void onServerError(ResponseBaseBean responseBaseBean) {
+                DebugUtil.d(TAG,"onServerError::responseBaseBean = " + responseBaseBean);
                 mLoadingView.setVisibility(GONE);
                 mLoadErrorView.setVisibility(VISIBLE);
                 mTodayWeatherContentView.setVisibility(INVISIBLE);

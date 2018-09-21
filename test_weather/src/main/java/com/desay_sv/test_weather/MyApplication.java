@@ -12,6 +12,9 @@ import com.zxl.common.DebugUtil;
 
 public class MyApplication extends Application {
 
+    //wx3588f7555119b55e
+    //c4df129b87be31e477e921f0471d1a35
+
     @Override
     public void onCreate() {
         super.onCreate();

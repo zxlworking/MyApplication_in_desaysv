@@ -12,5 +12,5 @@ public interface NetRequestListener {
     public void onNetError();
     public void onNetError(Throwable e);
 
-    public void onServer(ResponseBaseBean responseBaseBean);
+    public void onServerError(ResponseBaseBean responseBaseBean);
 }

@@ -203,7 +203,7 @@ public class QSBKView extends CardView {
             }
 
             @Override
-            public void onServer(ResponseBaseBean responseBaseBean) {
+            public void onServerError(ResponseBaseBean responseBaseBean) {
                 mLoadingView.setVisibility(GONE);
                 mLoadErrorView.setVisibility(VISIBLE);
                 mQSBKContentView.setVisibility(INVISIBLE);
