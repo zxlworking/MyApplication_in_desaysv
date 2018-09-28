@@ -25,7 +25,7 @@ import com.zxl.common.DebugUtil;
 public class LeftMenuFragment extends BaseFragment {
     private static final String TAG = "LeftMenuFragment";
 
-    private static final String[] MENU_TITLE_ARRAY = new String[]{"笑话","美女","账号"};
+    private static final String[] MENU_TITLE_ARRAY = new String[]{"笑话","美女","账号","检查更新"};
 
     private View mContentView;
 

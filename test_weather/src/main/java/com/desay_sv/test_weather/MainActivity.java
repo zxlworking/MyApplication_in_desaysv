@@ -24,12 +24,16 @@ import com.desay_sv.test_weather.fragment.AccountFragment;
 import com.desay_sv.test_weather.fragment.LeftMenuFragment;
 import com.desay_sv.test_weather.fragment.QSBKFragment;
 import com.desay_sv.test_weather.fragment.TaoBaoAnchorFragment;
+import com.desay_sv.test_weather.utils.CommonUtils;
 import com.desay_sv.test_weather.utils.Constants;
 import com.desay_sv.test_weather.utils.EventBusUtils;
 import com.zxl.common.DebugUtil;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -49,9 +53,11 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle mActionBarDrawerToggle;
 
     private LeftMenuFragment mLeftMenuFragment;
-    private QSBKFragment mQSBKFragment;
-    private TaoBaoAnchorFragment mTaoBaoAnchorFragment;
-    private AccountFragment mAccountFragment;
+//    private QSBKFragment mQSBKFragment;
+//    private TaoBaoAnchorFragment mTaoBaoAnchorFragment;
+//    private AccountFragment mAccountFragment;
+
+    private List<Fragment> mContentFragments = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +99,9 @@ public class MainActivity extends AppCompatActivity {
 
         showLeftMenuFragment();
 
-        showQSBKFragment();
+        initContentFragments();
+
+        showContentFragment(Constants.LEFT_MENU_POSITION_0);
 
         mLeftMenuFragment.setToolbar(mToolbar);
 
@@ -110,61 +118,43 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.commit();
     }
 
-    private void showQSBKFragment() {
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        if(null == mQSBKFragment){
-            mQSBKFragment = (QSBKFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.QSBKFragment");
-            fragmentTransaction.add(R.id.container_view,mQSBKFragment);
-        }else{
-            fragmentTransaction.show(mQSBKFragment);
-        }
-        fragmentTransaction.commit();
+    private void initContentFragments(){
+        mContentFragments.clear();
+        QSBKFragment mQSBKFragment = (QSBKFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.QSBKFragment");
+        mContentFragments.add(mQSBKFragment);
+        TaoBaoAnchorFragment mTaoBaoAnchorFragment = (TaoBaoAnchorFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.TaoBaoAnchorFragment");
+        mContentFragments.add(mTaoBaoAnchorFragment);
+        AccountFragment mAccountFragment = (AccountFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.AccountFragment");
+        mContentFragments.add(mAccountFragment);
     }
 
-    private void hideQSBKFragment() {
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        if(mQSBKFragment != null){
-            fragmentTransaction.hide(mQSBKFragment);
-        }
-        fragmentTransaction.commit();
-    }
+    private void showContentFragment(int index){
 
-    private void showTaoBaoAnchorFragment() {
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        if(null == mTaoBaoAnchorFragment){
-            mTaoBaoAnchorFragment = (TaoBaoAnchorFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.TaoBaoAnchorFragment");
-            fragmentTransaction.add(R.id.container_view,mTaoBaoAnchorFragment);
-        }else{
-            fragmentTransaction.show(mTaoBaoAnchorFragment);
+        for(int i = 0; i < mContentFragments.size(); i++){
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            Fragment fragment = mContentFragments.get(i);
+            DebugUtil.d(TAG,"showContentFragment::i = " + i);
+            if(i == index){
+                DebugUtil.d(TAG,"showContentFragment::index = " + index + "::isAdded = " + fragment.isAdded());
+                DebugUtil.d(TAG,"showContentFragment::fragment = " + fragment);
+                if(fragment.isAdded()){
+                    fragmentTransaction.show(fragment);
+                }else{
+                    fragmentTransaction.add(R.id.container_view,fragment);
+                    fragmentTransaction.show(fragment);
+                }
+                fragmentTransaction.commit();
+            }
         }
-        fragmentTransaction.commit();
-    }
 
-    private void hideTaoBaoAnchorFragment() {
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        if(mTaoBaoAnchorFragment != null){
-            fragmentTransaction.hide(mTaoBaoAnchorFragment);
+        for(int i = 0; i < mContentFragments.size(); i++){
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            Fragment fragment = mContentFragments.get(i);
+            if(i != index){
+                fragmentTransaction.hide(fragment);
+            }
+            fragmentTransaction.commit();
         }
-        fragmentTransaction.commit();
-    }
-
-    private void showAccountFragment() {
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        if(null == mAccountFragment){
-            mAccountFragment = (AccountFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.AccountFragment");
-            fragmentTransaction.add(R.id.container_view,mAccountFragment);
-        }else{
-            fragmentTransaction.show(mAccountFragment);
-        }
-        fragmentTransaction.commit();
-    }
-
-    private void hideAccountFragment() {
-        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        if(mAccountFragment != null){
-            fragmentTransaction.hide(mAccountFragment);
-        }
-        fragmentTransaction.commit();
     }
 
     private void requestLocatePermission() {
@@ -208,24 +198,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSelectLeftMenuEvent(SelectLeftMenuEvent event){
+        showContentFragment(event.mPosition);
         mDrawerLayout.closeDrawer(mLeftMenuView,true);
-        switch (event.mPosition){
-            case Constants.LEFT_MENU_POSITION_0:
-                hideTaoBaoAnchorFragment();
-                hideAccountFragment();
-                showQSBKFragment();
-                break;
-            case Constants.LEFT_MENU_POSITION_1:
-                hideQSBKFragment();
-                hideAccountFragment();
-                showTaoBaoAnchorFragment();
-                break;
-            case Constants.LEFT_MENU_POSITION_2:
-                hideQSBKFragment();
-                hideTaoBaoAnchorFragment();
-                showAccountFragment();
-                break;
-        }
     }
 
 }

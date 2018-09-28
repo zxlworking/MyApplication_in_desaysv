@@ -6,6 +6,7 @@ import android.net.NetworkInfo;
 
 import com.desay_sv.test_weather.http.data.CityInfoListResponseBean;
 import com.desay_sv.test_weather.http.data.QSBKElementList;
+import com.desay_sv.test_weather.http.data.ResponseBaseBean;
 import com.desay_sv.test_weather.http.data.TaoBaoAnchorListResponseBean;
 import com.desay_sv.test_weather.http.data.TodayWeatherResponseBean;
 import com.desay_sv.test_weather.http.data.UserInfoResponseBean;
@@ -98,10 +99,10 @@ public class HttpUtils {
 //        }
         if(isNetworkAvailable(context)){
 //        if(true){
-            Observable<TodayWeatherResponseBean> observable = mHttpAPI.getZHTianQiByLocation(l);
+            Observable<ResponseBaseBean> observable = mHttpAPI.getZHTianQiByLocation(l);
             observable.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<TodayWeatherResponseBean>() {
+                    .subscribe(new Subscriber<ResponseBaseBean>() {
                         @Override
                         public void onCompleted() {
                             DebugUtil.d(TAG,"getZHTianQiByLocation::onCompleted");
@@ -116,10 +117,16 @@ public class HttpUtils {
                         }
 
                         @Override
-                        public void onNext(TodayWeatherResponseBean todayWeatherResponseBean) {
-                            DebugUtil.d(TAG,"getZHTianQiByLocation::onNext::todayWeatherResponseBean = " + todayWeatherResponseBean);
-                            if(listener != null){
-                                listener.onSuccess(todayWeatherResponseBean);
+                        public void onNext(ResponseBaseBean responseBaseBean) {
+                            DebugUtil.d(TAG,"getZHTianQiByLocation::onNext::responseBaseBean = " + responseBaseBean);
+                            if(responseBaseBean.code == 0){
+                                if(listener != null){
+                                    listener.onSuccess(responseBaseBean);
+                                }
+                            }else{
+                                if(listener != null){
+                                    listener.onServerError(responseBaseBean);
+                                }
                             }
                         }
                     });

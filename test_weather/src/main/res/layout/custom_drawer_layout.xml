@@ -9,7 +9,8 @@
     <FrameLayout
         android:id="@+id/container_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:background="#55ff0000"/>
 
     <FrameLayout
         android:id="@+id/left_menu_view"

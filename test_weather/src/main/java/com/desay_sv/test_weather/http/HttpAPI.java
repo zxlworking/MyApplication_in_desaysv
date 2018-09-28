@@ -3,6 +3,7 @@ package com.desay_sv.test_weather.http;
 
 import com.desay_sv.test_weather.http.data.CityInfoListResponseBean;
 import com.desay_sv.test_weather.http.data.QSBKElementList;
+import com.desay_sv.test_weather.http.data.ResponseBaseBean;
 import com.desay_sv.test_weather.http.data.TaoBaoAnchorListResponseBean;
 import com.desay_sv.test_weather.http.data.TodayWeatherResponseBean;
 import com.desay_sv.test_weather.http.data.UserInfoResponseBean;
@@ -21,7 +22,7 @@ import rx.Observable;
 public interface HttpAPI {
 
     @GET("cgi_weather/test2.py")
-    public Observable<TodayWeatherResponseBean> getZHTianQiByLocation(@Query("l")String l);
+    public Observable<ResponseBaseBean> getZHTianQiByLocation(@Query("l")String l);
 //    public Call<ResponseBody> getZHTianQiByLocation(@Query("l")String l);
 
     @GET("cgi_weather/test3.py")

@@ -19,6 +19,7 @@ import com.desay_sv.test_weather.http.data.UserInfoResponseBean;
 import com.desay_sv.test_weather.http.listener.NetRequestListener;
 import com.desay_sv.test_weather.utils.CommonUtils;
 import com.desay_sv.test_weather.utils.SharePreUtils;
+import com.zxl.common.DebugUtil;
 
 /**
  * Created by zxl on 2018/9/21.
@@ -63,6 +64,7 @@ public class AccountFragment extends BaseFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        DebugUtil.d(TAG,"onCreateView");
         mContentView = inflater.inflate(R.layout.fragment_account,null);
 
         mLoadingView = mContentView.findViewById(R.id.loading_view);
