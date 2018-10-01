@@ -73,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
         mToolbar = findViewById(R.id.custom_tool_bar);
 
+
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mLeftMenuView = findViewById(R.id.left_menu_view);
 
