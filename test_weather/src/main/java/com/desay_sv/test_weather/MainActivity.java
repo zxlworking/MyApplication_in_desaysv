@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -16,14 +18,19 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
+import com.desay_sv.test_weather.event.BackSelectLeftMenuEvent;
 import com.desay_sv.test_weather.event.LocatePermissionSuccessEvent;
 import com.desay_sv.test_weather.event.RequestLocatePermissionEvent;
 import com.desay_sv.test_weather.event.SelectLeftMenuEvent;
 import com.desay_sv.test_weather.fragment.AccountFragment;
+import com.desay_sv.test_weather.fragment.CheckVersionFragment;
 import com.desay_sv.test_weather.fragment.LeftMenuFragment;
 import com.desay_sv.test_weather.fragment.QSBKFragment;
 import com.desay_sv.test_weather.fragment.TaoBaoAnchorFragment;
+import com.desay_sv.test_weather.http.data.TodayWeather;
+import com.desay_sv.test_weather.http.data.TodayWeatherResponseBean;
 import com.desay_sv.test_weather.utils.CommonUtils;
 import com.desay_sv.test_weather.utils.Constants;
 import com.desay_sv.test_weather.utils.EventBusUtils;
@@ -34,6 +41,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,9 +49,12 @@ public class MainActivity extends AppCompatActivity {
 
     private Context mContext;
 
+    private static final int MSG_CANCEL_CLICK_BACK_TO_FINISH = 1;
+
     private String[] permissions = new String[]{
             Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.WRITE_SETTINGS
     };
 
     private Toolbar mToolbar;
@@ -58,6 +69,20 @@ public class MainActivity extends AppCompatActivity {
 //    private AccountFragment mAccountFragment;
 
     private List<Fragment> mContentFragments = new ArrayList<>();
+
+    private Stack<Integer> mLeftMenuPositionStack = new Stack<>();
+    private boolean isClickBackToFinish = false;
+
+    private Handler mHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+                case MSG_CANCEL_CLICK_BACK_TO_FINISH:
+                    isClickBackToFinish = false;
+                    break;
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,9 +127,17 @@ public class MainActivity extends AppCompatActivity {
         initContentFragments();
 
         showContentFragment(Constants.LEFT_MENU_POSITION_0);
+        mLeftMenuPositionStack.push(Constants.LEFT_MENU_POSITION_0);
 
         mLeftMenuFragment.setToolbar(mToolbar);
 
+//        String s = "{\"code\": 0, \"address_info\": \"南京市\", \"today_weather\": {\"now_time\": \"17:50 实况\", \"temperature\": \"22\", \"is_w\": 1, \"simple_content\": \"周一 阴转小雨 18/24°C\", \"wind_direction\": \"东风\", \"air_quality\": \"67良\", \"humidity\": \"64%\", \"humidity_icon_css\": {\"width\": \"24\", \"height\": \"24\", \"background_position_x\": \"-2\", \"img\": \"http://i.tq121.com.cn/i/weather2015/city/iconall.png\", \"background_position_y\": \"-289\"}, \"is_limit\": 0, \"wind_icon_css\": {\"width\": \"24\", \"height\": \"24\", \"background_position_x\": \"-36\", \"img\": \"http://i.tq121.com.cn/i/weather2015/city/iconall.png\", \"background_position_y\": \"-291\"}, \"air_quality_icon_css\": {\"width\": \"24\", \"height\": \"24\", \"background_position_x\": \"-2\", \"img\": \"http://i.tq121.com.cn/i/weather2015/city/iconall.png\", \"background_position_y\": \"-314\"}, \"is_h\": 1, \"wind_value\": \"2级\", \"is_pol\": 1, \"temperature_icon_css\": {\"background_position_y1\": \"-137\", \"background_position_y2\": \"-142\", \"img\": \"http://i.tq121.com.cn/i/weather2015/city/iconall.png\", \"width2\": \"15\", \"width1\": \"15\", \"background_position_x2\": \"-35\", \"background_position_x1\": \"-35\", \"height1\": \"8\", \"height2\": \"57.5938\"}}, \"city_name\": \"南京市\", \"today_weather_detail\": [{\"sun_icon_css\": {\"width\": \"22\", \"height\": \"22\", \"background_position_x\": \"-2\", \"img\": \"http://i.tq121.com.cn/i/weather2015/city/iconall.png\", \"background_position_y\": \"-269\"}, \"is_sun_up\": 0, \"temperature\": \"18\", \"title\": \"8日夜间\", \"wind_direction\": \"东风\", \"wind_icon_css\": {\"width\": \"24\", \"height\": \"25\", \"background_position_x\": \"-82\", \"img\": \"http://i.tq121.com.cn/i/weather2015/city/iconall.png\", \"background_position_y\": \"-69\"}, \"sun_time\": \"日落 17:43\", \"weather\": \"阴\", \"wind_value\": \"3-4级\", \"weather_icon_css\": {\"width\": \"80\", \"height\": \"80\", \"background_position_x\": \"-160\", \"img\": \"https://i.tq121.com.cn/i/weather2015/png/blue80.png\", \"background_position_y\": \"-320\"}}, {\"sun_icon_css\": {\"width\": \"22\", \"height\": \"22\", \"background_position_x\": \"-33\", \"img\": \"http://i.tq121.com.cn/i/weather2015/city/iconall.png\", \"background_position_y\": \"-269\"}, \"is_sun_up\": 1, \"temperature\": \"24\", \"title\": \"9日白天\", \"wind_direction\": \"西北风\", \"wind_icon_css\": {\"width\": \"24\", \"height\": \"25\", \"background_position_x\": \"-82\", \"img\": \"http://i.tq121.com.cn/i/weather2015/city/iconall.png\", \"background_position_y\": \"-188\"}, \"weather_desc\": \"天空阴沉\", \"weather\": \"小雨\", \"sun_time\": \"日出 06:03\", \"wind_value\": \"4-5级\", \"weather_icon_css\": {\"width\": \"80\", \"height\": \"80\", \"background_position_x\": \"-560\", \"img\": \"https://i.tq121.com.cn/i/weather2015/png/blue80.png\", \"background_position_y\": \"0\"}}], \"desc\": \"success\"}";
+//        try {
+//            TodayWeatherResponseBean todayWeatherResponseBean = CommonUtils.mGson.fromJson(s, TodayWeatherResponseBean.class);
+//            DebugUtil.d(TAG, "onCreate::todayWeatherResponseBean = " + todayWeatherResponseBean);
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
     }
 
     private void showLeftMenuFragment() {
@@ -126,10 +159,11 @@ public class MainActivity extends AppCompatActivity {
         mContentFragments.add(mTaoBaoAnchorFragment);
         AccountFragment mAccountFragment = (AccountFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.AccountFragment");
         mContentFragments.add(mAccountFragment);
+        CheckVersionFragment mCheckVersionFragment = (CheckVersionFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.CheckVersionFragment");
+        mContentFragments.add(mCheckVersionFragment);
     }
 
     private void showContentFragment(int index){
-
         for(int i = 0; i < mContentFragments.size(); i++){
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             Fragment fragment = mContentFragments.get(i);
@@ -184,6 +218,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        DebugUtil.d(TAG,"onBackPressed::mLeftMenuPositionStack = " + mLeftMenuPositionStack);
+        int position = Constants.LEFT_MENU_POSITION_0;
+        if(mLeftMenuPositionStack.size() > 1){
+            mLeftMenuPositionStack.pop();
+            position = mLeftMenuPositionStack.get(mLeftMenuPositionStack.size() - 1);
+
+            showContentFragment(position);
+
+            EventBusUtils.post(new BackSelectLeftMenuEvent(position));
+        }else{
+            if(!isClickBackToFinish){
+                isClickBackToFinish = true;
+                Toast.makeText(mContext,"再按一次退出",Toast.LENGTH_SHORT).show();
+                mHandler.sendEmptyMessageDelayed(MSG_CANCEL_CLICK_BACK_TO_FINISH,1500);
+            }else {
+                super.onBackPressed();
+            }
+        }
+
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         EventBusUtils.unregister(this);
@@ -198,6 +255,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSelectLeftMenuEvent(SelectLeftMenuEvent event){
+        mLeftMenuPositionStack.push(event.mPosition);
         showContentFragment(event.mPosition);
         mDrawerLayout.closeDrawer(mLeftMenuView,true);
     }

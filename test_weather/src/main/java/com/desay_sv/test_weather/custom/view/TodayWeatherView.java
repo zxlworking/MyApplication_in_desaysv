@@ -67,7 +67,7 @@ public class TodayWeatherView extends CardView {
             DebugUtil.d(TAG, "onLocationChanged::isNeedLoadData = " + isNeedLoadData + "::location = " + location);
             if (isNeedLoadData) {
                 mLocationInfo = location.getLatitude() + "," + location.getLongitude();
-                getDataFromNetByLocation(mLocationInfo);
+//                getDataFromNetByLocation(mLocationInfo);
             }
         }
 
@@ -113,6 +113,7 @@ public class TodayWeatherView extends CardView {
             String city = bdLocation.getCity();    //获取城市
             String district = bdLocation.getDistrict();    //获取区县
             String street = bdLocation.getStreet();    //获取街道信息
+            DebugUtil.d(TAG,"mBdAbstractLocationListener::onReceiveLocation::addr = " + addr + "::city = " + city);
 
             mLocationClient.stop();
 
@@ -286,7 +287,8 @@ public class TodayWeatherView extends CardView {
         mLoadErrorBtn.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                getDataFromNetByLocation(mLocationInfo);
+                //getDataFromNetByLocation(mLocationInfo);
+                doLocate();
             }
         });
 
@@ -308,9 +310,7 @@ public class TodayWeatherView extends CardView {
 
         DebugUtil.d(TAG,"init::isNeedStartRequestPermissionActivity = " + isNeedStartRequestPermissionActivity);
 
-        mLoadingView.setVisibility(VISIBLE);
-        mLoadErrorView.setVisibility(GONE);
-        mTodayWeatherContentView.setVisibility(INVISIBLE);
+
         if (isNeedStartRequestPermissionActivity) {
             EventBusUtils.post(new RequestLocatePermissionEvent());
         } else {
@@ -320,70 +320,70 @@ public class TodayWeatherView extends CardView {
         }
     }
 
-    private void getDataFromNetByLocation(String l) {
-        DebugUtil.d(TAG,"getDataFromNetByLocation::isLoading = " + isLoading);
-        if (isLoading) {
-            return;
-        }
-        isLoading = true;
+//    private void getDataFromNetByLocation(String l) {
+//        DebugUtil.d(TAG,"getDataFromNetByLocation::isLoading = " + isLoading);
+//        if (isLoading) {
+//            return;
+//        }
+//        isLoading = true;
+//
+//        mLoadingView.setVisibility(VISIBLE);
+//        mLoadErrorView.setVisibility(GONE);
+//        mTodayWeatherContentView.setVisibility(INVISIBLE);
+//
+//        HttpUtils.getInstance().getZHTianQiByLocation(mContext, l, new NetRequestListener() {
+//            @Override
+//            public void onSuccess(ResponseBaseBean responseBaseBean) {
+//                DebugUtil.d(TAG,"onSuccess::responseBaseBean = " + responseBaseBean);
+//
+//                TodayWeatherResponseBean todayWeatherResponseBean = (TodayWeatherResponseBean) responseBaseBean;
+//
+//                mLoadingView.setVisibility(GONE);
+//                mLoadErrorView.setVisibility(GONE);
+//                mTodayWeatherContentView.setVisibility(VISIBLE);
+//
+//                setDataToView(todayWeatherResponseBean);
+//
+//                isLoading = false;
+//                isNeedLoadData = false;
+//            }
+//
+//            @Override
+//            public void onNetError() {
+//                DebugUtil.d(TAG,"onNetError");
+//                mLoadingView.setVisibility(GONE);
+//                mLoadErrorView.setVisibility(VISIBLE);
+//                mTodayWeatherContentView.setVisibility(INVISIBLE);
+//                mLoadErrorTv.setText(R.string.no_network_tip);
+//
+//                isLoading = false;
+//            }
+//
+//            @Override
+//            public void onNetError(Throwable e) {
+//                DebugUtil.d(TAG,"onNetError::e = " + e);
+//                mLoadingView.setVisibility(GONE);
+//                mLoadErrorView.setVisibility(VISIBLE);
+//                mTodayWeatherContentView.setVisibility(INVISIBLE);
+//                mLoadErrorTv.setText(mContext.getResources().getString(R.string.network_error_tip, ""));
+//
+//                isLoading = false;
+//            }
+//
+//            @Override
+//            public void onServerError(ResponseBaseBean responseBaseBean) {
+//                DebugUtil.d(TAG,"onServerError::responseBaseBean = " + responseBaseBean);
+//                mLoadingView.setVisibility(GONE);
+//                mLoadErrorView.setVisibility(VISIBLE);
+//                mTodayWeatherContentView.setVisibility(INVISIBLE);
+//                mLoadErrorTv.setText(mContext.getResources().getString(R.string.server_error_tip, responseBaseBean.desc));
+//
+//                isLoading = false;
+//            }
+//        });
+//    }
 
-        mLoadingView.setVisibility(VISIBLE);
-        mLoadErrorView.setVisibility(GONE);
-        mTodayWeatherContentView.setVisibility(INVISIBLE);
-
-        HttpUtils.getInstance().getZHTianQiByLocation(mContext, l, new NetRequestListener() {
-            @Override
-            public void onSuccess(ResponseBaseBean responseBaseBean) {
-                DebugUtil.d(TAG,"onSuccess::responseBaseBean = " + responseBaseBean);
-
-                TodayWeatherResponseBean todayWeatherResponseBean = (TodayWeatherResponseBean) responseBaseBean;
-
-                mLoadingView.setVisibility(GONE);
-                mLoadErrorView.setVisibility(GONE);
-                mTodayWeatherContentView.setVisibility(VISIBLE);
-
-                setDataToView(todayWeatherResponseBean);
-
-                isLoading = false;
-                isNeedLoadData = false;
-            }
-
-            @Override
-            public void onNetError() {
-                DebugUtil.d(TAG,"onNetError");
-                mLoadingView.setVisibility(GONE);
-                mLoadErrorView.setVisibility(VISIBLE);
-                mTodayWeatherContentView.setVisibility(INVISIBLE);
-                mLoadErrorTv.setText(R.string.no_network_tip);
-
-                isLoading = false;
-            }
-
-            @Override
-            public void onNetError(Throwable e) {
-                DebugUtil.d(TAG,"onNetError::e = " + e);
-                mLoadingView.setVisibility(GONE);
-                mLoadErrorView.setVisibility(VISIBLE);
-                mTodayWeatherContentView.setVisibility(INVISIBLE);
-                mLoadErrorTv.setText(mContext.getResources().getString(R.string.network_error_tip, ""));
-
-                isLoading = false;
-            }
-
-            @Override
-            public void onServerError(ResponseBaseBean responseBaseBean) {
-                DebugUtil.d(TAG,"onServerError::responseBaseBean = " + responseBaseBean);
-                mLoadingView.setVisibility(GONE);
-                mLoadErrorView.setVisibility(VISIBLE);
-                mTodayWeatherContentView.setVisibility(INVISIBLE);
-                mLoadErrorTv.setText(mContext.getResources().getString(R.string.server_error_tip, responseBaseBean.desc));
-
-                isLoading = false;
-            }
-        });
-    }
-
-    private void getDataFromNetByCity(String City) {
+    private void getDataFromNetByCity(String city) {
         DebugUtil.d(TAG,"getDataFromNetByCity::isLoading = " + isLoading);
         if (isLoading) {
             return;
@@ -394,7 +394,7 @@ public class TodayWeatherView extends CardView {
         mLoadErrorView.setVisibility(GONE);
         mTodayWeatherContentView.setVisibility(INVISIBLE);
 
-        HttpUtils.getInstance().getZHTianQiByCity(mContext, City, new NetRequestListener() {
+        HttpUtils.getInstance().getZHTianQiByCity(mContext, city, new NetRequestListener() {
             @Override
             public void onSuccess(ResponseBaseBean responseBaseBean) {
                 DebugUtil.d(TAG,"onSuccess::responseBaseBean = " + responseBaseBean);
@@ -529,6 +529,11 @@ public class TodayWeatherView extends CardView {
 
     public void doLocate() {
         DebugUtil.d(TAG,"doLocate");
+
+        mLoadingView.setVisibility(VISIBLE);
+        mLoadErrorView.setVisibility(GONE);
+        mTodayWeatherContentView.setVisibility(INVISIBLE);
+
 //        if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
 //                ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
 //            // TODO: Consider calling
@@ -573,7 +578,7 @@ public class TodayWeatherView extends CardView {
         //BD09：百度墨卡托坐标；
         //海外地区定位，无需设置坐标类型，统一返回WGS84类型坐标
 
-        mLocationClientOption.setScanSpan(1000);
+        mLocationClientOption.setScanSpan(60000);
         //可选，设置发起定位请求的间隔，int类型，单位ms
         //如果设置为0，则代表单次定位，即仅定位一次，默认为0
         //如果设置非0，需设置1000ms以上才有效

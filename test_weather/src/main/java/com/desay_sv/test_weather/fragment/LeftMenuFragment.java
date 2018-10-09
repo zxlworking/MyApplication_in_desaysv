@@ -14,9 +14,13 @@ import android.widget.TextView;
 
 import com.desay_sv.test_weather.R;
 import com.desay_sv.test_weather.custom.view.TodayWeatherView;
+import com.desay_sv.test_weather.event.BackSelectLeftMenuEvent;
 import com.desay_sv.test_weather.event.SelectLeftMenuEvent;
 import com.desay_sv.test_weather.utils.EventBusUtils;
 import com.zxl.common.DebugUtil;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 /**
  * Created by zxl on 2018/9/20.
@@ -25,7 +29,7 @@ import com.zxl.common.DebugUtil;
 public class LeftMenuFragment extends BaseFragment {
     private static final String TAG = "LeftMenuFragment";
 
-    private static final String[] MENU_TITLE_ARRAY = new String[]{"笑话","美女","账号","检查更新"};
+    private static final String[] MENU_TITLE_ARRAY = new String[]{"笑话","美女","账号","版本更新"};
 
     private View mContentView;
 
@@ -42,6 +46,9 @@ public class LeftMenuFragment extends BaseFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         DebugUtil.d(TAG,"onCreateView");
+
+        EventBusUtils.register(this);
+
         mContentView = inflater.inflate(R.layout.fragment_left_menu,null, false);
 
         mTodayWeatherView = mContentView.findViewById(R.id.left_menu_today_weather_view);
@@ -125,5 +132,16 @@ public class LeftMenuFragment extends BaseFragment {
             mItemLeftMenuContentLl = mItemView.findViewById(R.id.item_left_menu_content_ll);
             mItemLeftMenuTitleTv = mItemView.findViewById(R.id.item_left_menu_title_tv);
         }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        EventBusUtils.unregister(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onBackSelectLeftMenuEvent(BackSelectLeftMenuEvent event){
+        setSelectedPosition(event.mPosition);
     }
 }

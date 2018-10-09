@@ -66,4 +66,14 @@ public class SharePreUtils {
         }
     }
 
+    public void saveDownloadId(long id){
+        SharedPreferences.Editor editor = mSharedPreferences.edit();
+        editor.putLong("DownloadId",id);
+        editor.commit();
+    }
+
+    public long getDownloadId(){
+        return mSharedPreferences.getLong("DownloadId",0);
+    }
+
 }

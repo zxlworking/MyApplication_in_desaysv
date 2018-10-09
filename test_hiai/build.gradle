@@ -12,6 +12,12 @@ android {
         versionCode 1
         versionName "1.0"
 
+        ndk {
+            moduleName "libjniPdfium"//指定生成的so文件名
+            abiFilters "armeabi", "armeabi-v7a", "x86"//cpu的类型
+        }
+
+
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
@@ -23,6 +29,14 @@ android {
         }
     }
 
+//    sourceSets {
+//        main {
+//            // 设置Jni so文件路径 如果有jniLibs目录就不需要设置
+////            jniLibs.srcDirs = ['libs']
+//            //disable automatic ndk-build
+//            jni.srcDirs = []
+//        }
+//    }
 }
 
 repositories {

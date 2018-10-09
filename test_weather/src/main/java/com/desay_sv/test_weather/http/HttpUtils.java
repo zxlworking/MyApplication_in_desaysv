@@ -9,8 +9,10 @@ import com.desay_sv.test_weather.http.data.QSBKElementList;
 import com.desay_sv.test_weather.http.data.ResponseBaseBean;
 import com.desay_sv.test_weather.http.data.TaoBaoAnchorListResponseBean;
 import com.desay_sv.test_weather.http.data.TodayWeatherResponseBean;
+import com.desay_sv.test_weather.http.data.UpdateInfoResponseBean;
 import com.desay_sv.test_weather.http.data.UserInfoResponseBean;
 import com.desay_sv.test_weather.http.listener.NetRequestListener;
+import com.desay_sv.test_weather.utils.CommonUtils;
 import com.desay_sv.test_weather.utils.Constants;
 import com.zxl.common.DebugUtil;
 
@@ -25,7 +27,6 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.http.Query;
 import rx.Observable;
 import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
@@ -99,7 +100,7 @@ public class HttpUtils {
 //        }
         if(isNetworkAvailable(context)){
 //        if(true){
-            Observable<ResponseBaseBean> observable = mHttpAPI.getZHTianQiByLocation(l);
+            Observable<TodayWeatherResponseBean> observable = mHttpAPI.getZHTianQiByLocation(l);
             observable.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Subscriber<ResponseBaseBean>() {
@@ -162,7 +163,7 @@ public class HttpUtils {
             Observable<TodayWeatherResponseBean> observable = mHttpAPI.getZHTianQiByCity(city);
             observable.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<TodayWeatherResponseBean>() {
+                    .subscribe(new Subscriber<ResponseBaseBean>() {
                         @Override
                         public void onCompleted() {
                             DebugUtil.d(TAG,"getZHTianQiByCity::onCompleted");
@@ -177,10 +178,16 @@ public class HttpUtils {
                         }
 
                         @Override
-                        public void onNext(TodayWeatherResponseBean todayWeatherResponseBean) {
-                            DebugUtil.d(TAG,"getZHTianQiByCity::onNext::todayWeatherResponseBean = " + todayWeatherResponseBean);
-                            if(listener != null){
-                                listener.onSuccess(todayWeatherResponseBean);
+                        public void onNext(ResponseBaseBean responseBaseBean) {
+                            DebugUtil.d(TAG,"getZHTianQiByCity::onNext::todayWeatherResponseBean = " + responseBaseBean);
+                            if(responseBaseBean.code == 0){
+                                if(listener != null){
+                                    listener.onSuccess(responseBaseBean);
+                                }
+                            }else{
+                                if(listener != null){
+                                    listener.onServerError(responseBaseBean);
+                                }
                             }
                         }
                     });
@@ -200,7 +207,7 @@ public class HttpUtils {
             Observable<CityInfoListResponseBean> observable = mHttpAPI.getCityInfoList();
             observable.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<CityInfoListResponseBean>() {
+                    .subscribe(new Subscriber<ResponseBaseBean>() {
                         @Override
                         public void onCompleted() {
                             DebugUtil.d(TAG,"getCityInfoList::onCompleted");
@@ -215,10 +222,16 @@ public class HttpUtils {
                         }
 
                         @Override
-                        public void onNext(CityInfoListResponseBean cityInfoListResponseBean) {
-                            DebugUtil.d(TAG,"getCityInfoList::onNext::cityInfoListResponseBean = " + cityInfoListResponseBean);
-                            if(listener != null){
-                                listener.onSuccess(cityInfoListResponseBean);
+                        public void onNext(ResponseBaseBean responseBaseBean) {
+                            DebugUtil.d(TAG,"getCityInfoList::onNext::cityInfoListResponseBean = " + responseBaseBean);
+                            if(responseBaseBean.code == 0){
+                                if(listener != null){
+                                    listener.onSuccess(responseBaseBean);
+                                }
+                            }else{
+                                if(listener != null){
+                                    listener.onServerError(responseBaseBean);
+                                }
                             }
                         }
                     });
@@ -256,7 +269,7 @@ public class HttpUtils {
             Observable<TaoBaoAnchorListResponseBean> observable = mHttpAPI.getTaoBaoAnchor(page);
             observable.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<TaoBaoAnchorListResponseBean>() {
+                    .subscribe(new Subscriber<ResponseBaseBean>() {
                         @Override
                         public void onCompleted() {
                             DebugUtil.d(TAG,"getTaoBaoAnchor::onCompleted");
@@ -271,10 +284,16 @@ public class HttpUtils {
                         }
 
                         @Override
-                        public void onNext(TaoBaoAnchorListResponseBean taoBaoAnchorListResponseBean) {
-                            DebugUtil.d(TAG,"getTaoBaoAnchor::onNext::taoBaoAnchorListResponseBean = " + taoBaoAnchorListResponseBean);
-                            if(listener != null){
-                                listener.onSuccess(taoBaoAnchorListResponseBean);
+                        public void onNext(ResponseBaseBean responseBaseBean) {
+                            DebugUtil.d(TAG,"getTaoBaoAnchor::onNext::taoBaoAnchorListResponseBean = " + responseBaseBean);
+                            if(responseBaseBean.code == 0){
+                                if(listener != null){
+                                    listener.onSuccess(responseBaseBean);
+                                }
+                            }else{
+                                if(listener != null){
+                                    listener.onServerError(responseBaseBean);
+                                }
                             }
                         }
                     });
@@ -293,7 +312,7 @@ public class HttpUtils {
             Observable<QSBKElementList> observable = mHttpAPI.getQSBK(page);
             observable.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<QSBKElementList>() {
+                    .subscribe(new Subscriber<ResponseBaseBean>() {
                         @Override
                         public void onCompleted() {
                             DebugUtil.d(TAG,"getQSBK::onCompleted");
@@ -308,10 +327,16 @@ public class HttpUtils {
                         }
 
                         @Override
-                        public void onNext(QSBKElementList qsbkElementList) {
-                            DebugUtil.d(TAG,"getQSBK::onNext::qsbkElementList = " + qsbkElementList);
-                            if(listener != null){
-                                listener.onSuccess(qsbkElementList);
+                        public void onNext(ResponseBaseBean responseBaseBean) {
+                            DebugUtil.d(TAG,"getQSBK::onNext::responseBaseBean = " + responseBaseBean);
+                            if(responseBaseBean.code == 0){
+                                if(listener != null){
+                                    listener.onSuccess(responseBaseBean);
+                                }
+                            }else{
+                                if(listener != null){
+                                    listener.onServerError(responseBaseBean);
+                                }
                             }
                         }
                     });
@@ -350,7 +375,7 @@ public class HttpUtils {
             Observable<UserInfoResponseBean> observable = mHttpAPI.register(user_operator,user_info);
             observable.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Subscriber<UserInfoResponseBean>() {
+                    .subscribe(new Subscriber<ResponseBaseBean>() {
                         @Override
                         public void onCompleted() {
                             DebugUtil.d(TAG,"register::onCompleted");
@@ -365,10 +390,16 @@ public class HttpUtils {
                         }
 
                         @Override
-                        public void onNext(UserInfoResponseBean userInfoResponseBean) {
-                            DebugUtil.d(TAG,"register::onNext::userInfoResponseBean = " + userInfoResponseBean);
-                            if(listener != null){
-                                listener.onSuccess(userInfoResponseBean);
+                        public void onNext(ResponseBaseBean responseBaseBean) {
+                            DebugUtil.d(TAG,"register::onNext::userInfoResponseBean = " + responseBaseBean);
+                            if(responseBaseBean.code == 0){
+                                if(listener != null){
+                                    listener.onSuccess(responseBaseBean);
+                                }
+                            }else{
+                                if(listener != null){
+                                    listener.onServerError(responseBaseBean);
+                                }
                             }
                         }
                     });
@@ -379,6 +410,72 @@ public class HttpUtils {
             }
         }
     }
+
+    public void getUpdateInfo(Context context, final NetRequestListener listener){
+        DebugUtil.d(TAG,"getUpdateInfo");
+
+        if(isNetworkAvailable(context)){
+
+//            Call<ResponseBody> call = mHttpAPI.getUpdateInfo();
+//            call.enqueue(new Callback<ResponseBody>() {
+//                @Override
+//                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                    try {
+//                        String s = new String(response.body().bytes());
+//                        DebugUtil.d(TAG, "getUpdateInfo::s = " + s);
+//
+//                        UpdateInfoResponseBean updateInfoResponseBean = CommonUtils.mGson.fromJson(s, UpdateInfoResponseBean.class);
+//                        DebugUtil.d(TAG, "getUpdateInfo::updateInfoResponseBean = " + updateInfoResponseBean);
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//
+//                @Override
+//                public void onFailure(Call<ResponseBody> call, Throwable t) {
+//
+//                }
+//            });
+
+
+
+            Observable<UpdateInfoResponseBean> observable = mHttpAPI.getUpdateInfo();
+            observable.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<ResponseBaseBean>() {
+                        @Override
+                        public void onCompleted() {
+                            DebugUtil.d(TAG,"getUpdateInfo::onCompleted");
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            DebugUtil.d(TAG,"getUpdateInfo::onError::e = " + e);
+                            if(listener != null){
+                                listener.onNetError(e);
+                            }
+                        }
+
+                        @Override
+                        public void onNext(ResponseBaseBean responseBaseBean) {
+                            DebugUtil.d(TAG,"getUpdateInfo::onNext::responseBaseBean = " + responseBaseBean);
+                            if(listener != null){
+                                if(responseBaseBean.code == 0){
+                                    listener.onSuccess(responseBaseBean);
+                                }else{
+                                    listener.onServerError(responseBaseBean);
+                                }
+                            }
+                        }
+                    });
+        }else{
+            DebugUtil.d(TAG,"getUpdateInfo::net work error");
+            if(listener != null){
+                listener.onNetError();
+            }
+        }
+    }
+
 
     //==============NetworkAvailable===============
     /**
