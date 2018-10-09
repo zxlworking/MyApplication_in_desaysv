@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--<network-security-config>-->
+    <!--<domain-config>-->
+        <!--<domain includeSubdomains="true">www.zxltest.cn</domain>-->
+        <!--<trust-anchors>-->
+            <!--<certificates src="@raw/my_ca"/>-->
+        <!--</trust-anchors>-->
+    <!--</domain-config>-->
+<!--</network-security-config>-->
 <network-security-config>
-    <domain-config>
-        <domain includeSubdomains="true">www.zxltest.cn</domain>
+    <debug-overrides>
         <trust-anchors>
             <certificates src="@raw/my_ca"/>
         </trust-anchors>
-    </domain-config>
+    </debug-overrides>
 </network-security-config>

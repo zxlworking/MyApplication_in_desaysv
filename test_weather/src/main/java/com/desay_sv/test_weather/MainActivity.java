@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int MSG_CANCEL_CLICK_BACK_TO_FINISH = 1;
 
     private String[] permissions = new String[]{
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.WRITE_SETTINGS
@@ -96,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
         EventBusUtils.register(this);
 
         mToolbar = findViewById(R.id.custom_tool_bar);
+
 
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mLeftMenuView = findViewById(R.id.left_menu_view);
