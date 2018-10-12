@@ -21,12 +21,19 @@ import com.desay_sv.test_weather.utils.CommonUtils;
 import com.desay_sv.test_weather.utils.SharePreUtils;
 import com.zxl.common.DebugUtil;
 
+import java.util.regex.Pattern;
+
 /**
  * Created by zxl on 2018/9/21.
  */
 
 public class AccountFragment extends BaseFragment {
     private static final String TAG = "AccountFragment";
+
+    private static final int CLICK_UNKNOWN_STATE = 0;
+    private static final int CLICK_REGISTER_STATE = 1;
+    private static final int CLICK_LOGIN_STATE = 2;
+    private static final int LOGIN_SUCCESS_STATE = 3;
 
     private View mContentView;
 
@@ -37,27 +44,47 @@ public class AccountFragment extends BaseFragment {
     private TextInputEditText mUserNameTextInputEditText;
     private TextInputLayout mPassWordTextInputLayout;
     private TextInputEditText mPassWordTextInputEditText;
+    private TextInputLayout mPhoneNumberTextInputLayout;
     private TextInputEditText mPhoneNumberTextInputEditText;
+    private TextInputLayout mNickNameTextInputLayout;
     private TextInputEditText mNickNameTextInputEditText;
 
     private CardView mRegisterCardView;
     private CardView mLoginCardView;
     private CardView mLogoutCardView;
+    private CardView mCancelCardView;
 
+    private int mClickState = CLICK_UNKNOWN_STATE;
     private boolean isRegistering = false;
+    private boolean isLogining = false;
 
     private View.OnClickListener mOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             switch (v.getId()){
                 case R.id.register_card_view:
-                    register();
+                    if(mClickState == CLICK_REGISTER_STATE){
+                        register();
+                    }else{
+                        mClickState = CLICK_REGISTER_STATE;
+                    }
                     break;
                 case R.id.login_card_view:
+                    if(mClickState == CLICK_LOGIN_STATE){
+                        login();
+                    }else{
+                        mClickState = CLICK_LOGIN_STATE;
+                    }
                     break;
                 case R.id.logout_card_view:
+                    mClickState = CLICK_UNKNOWN_STATE;
+                    SharePreUtils.getInstance(mActivity).saveUserInfo(null);
+                    break;
+                case R.id.cancel_card_view:
+                    mClickState = CLICK_UNKNOWN_STATE;
                     break;
             }
+            doForkState(mClickState);
         }
     };
 
@@ -78,14 +105,21 @@ public class AccountFragment extends BaseFragment {
         mPassWordTextInputEditText = mContentView.findViewById(R.id.pass_word_input_et);
         mPassWordTextInputLayout.setPasswordVisibilityToggleEnabled(true);
 
+        mPhoneNumberTextInputLayout = mContentView.findViewById(R.id.phone_number_input_l);
         mPhoneNumberTextInputEditText = mContentView.findViewById(R.id.phone_number_input_et);
+
+        mNickNameTextInputLayout = mContentView.findViewById(R.id.nick_name_input_l);
         mNickNameTextInputEditText = mContentView.findViewById(R.id.nick_name_input_et);
 
         mRegisterCardView = mContentView.findViewById(R.id.register_card_view);
         mLoginCardView = mContentView.findViewById(R.id.login_card_view);
         mLogoutCardView = mContentView.findViewById(R.id.logout_card_view);
+        mCancelCardView = mContentView.findViewById(R.id.cancel_card_view);
 
         mRegisterCardView.setOnClickListener(mOnClickListener);
+        mLoginCardView.setOnClickListener(mOnClickListener);
+        mLogoutCardView.setOnClickListener(mOnClickListener);
+        mCancelCardView.setOnClickListener(mOnClickListener);
 
         return mContentView;
     }
@@ -96,13 +130,99 @@ public class AccountFragment extends BaseFragment {
 
         UserInfoResponseBean userInfoResponseBean = SharePreUtils.getInstance(mActivity).getUserInfo();
         if(userInfoResponseBean != null){
-            mRegisterCardView.setVisibility(View.GONE);
-            mLoginCardView.setVisibility(View.GONE);
-            mLogoutCardView.setVisibility(View.VISIBLE);
+            doForkState(LOGIN_SUCCESS_STATE);
         }else{
             mRegisterCardView.setVisibility(View.VISIBLE);
             mLoginCardView.setVisibility(View.VISIBLE);
             mLogoutCardView.setVisibility(View.GONE);
+        }
+    }
+
+    public void doForkState(int state){
+        switch (state){
+            case CLICK_UNKNOWN_STATE:
+                mUserNameTextInputLayout.setVisibility(View.GONE);
+                mPassWordTextInputLayout.setVisibility(View.GONE);
+                mPhoneNumberTextInputLayout.setVisibility(View.GONE);
+                mNickNameTextInputLayout.setVisibility(View.GONE);
+
+                initInputContent(state);
+
+                mRegisterCardView.setVisibility(View.VISIBLE);
+                mLoginCardView.setVisibility(View.VISIBLE);
+                mLogoutCardView.setVisibility(View.GONE);
+                mCancelCardView.setVisibility(View.GONE);
+                break;
+            case CLICK_REGISTER_STATE:
+                mUserNameTextInputLayout.setVisibility(View.VISIBLE);
+                mPassWordTextInputLayout.setVisibility(View.VISIBLE);
+                mPhoneNumberTextInputLayout.setVisibility(View.VISIBLE);
+                mNickNameTextInputLayout.setVisibility(View.VISIBLE);
+
+                initInputContent(state);
+
+                mRegisterCardView.setVisibility(View.VISIBLE);
+                mLoginCardView.setVisibility(View.GONE);
+                mLogoutCardView.setVisibility(View.GONE);
+                mCancelCardView.setVisibility(View.VISIBLE);
+                break;
+            case CLICK_LOGIN_STATE:
+                mUserNameTextInputLayout.setVisibility(View.VISIBLE);
+                mPassWordTextInputLayout.setVisibility(View.VISIBLE);
+                mPhoneNumberTextInputLayout.setVisibility(View.GONE);
+                mNickNameTextInputLayout.setVisibility(View.GONE);
+
+                mRegisterCardView.setVisibility(View.GONE);
+                mLoginCardView.setVisibility(View.VISIBLE);
+                mLogoutCardView.setVisibility(View.GONE);
+                mCancelCardView.setVisibility(View.VISIBLE);
+                break;
+            case LOGIN_SUCCESS_STATE:
+                mUserNameTextInputLayout.setVisibility(View.VISIBLE);
+                mPassWordTextInputLayout.setVisibility(View.GONE);
+                mPhoneNumberTextInputLayout.setVisibility(View.VISIBLE);
+                mNickNameTextInputLayout.setVisibility(View.VISIBLE);
+
+                initInputContent(state);
+
+                mRegisterCardView.setVisibility(View.GONE);
+                mLoginCardView.setVisibility(View.GONE);
+                mLogoutCardView.setVisibility(View.VISIBLE);
+                mCancelCardView.setVisibility(View.GONE);
+                break;
+        }
+    }
+
+    private void initInputContent(int state) {
+        switch (state){
+            case CLICK_UNKNOWN_STATE:
+            case CLICK_REGISTER_STATE:
+            case CLICK_LOGIN_STATE:
+                mUserNameTextInputEditText.setEnabled(true);
+                mPassWordTextInputEditText.setEnabled(true);
+                mPhoneNumberTextInputEditText.setEnabled(true);
+                mNickNameTextInputEditText.setEnabled(true);
+
+                mUserNameTextInputEditText.setText("");
+                mPassWordTextInputEditText.setText("");
+                mPhoneNumberTextInputEditText.setText("");
+                mNickNameTextInputEditText.setText("");
+                mUserNameTextInputEditText.requestFocus();
+                break;
+            case LOGIN_SUCCESS_STATE:
+
+                mUserNameTextInputEditText.setEnabled(false);
+                mPassWordTextInputEditText.setEnabled(false);
+                mPhoneNumberTextInputEditText.setEnabled(false);
+                mNickNameTextInputEditText.setEnabled(false);
+
+                UserInfoResponseBean userInfoResponseBean = SharePreUtils.getInstance(mActivity).getUserInfo();
+
+                mUserNameTextInputEditText.setText(userInfoResponseBean.user_name);
+                mPassWordTextInputEditText.setText("");
+                mPhoneNumberTextInputEditText.setText(userInfoResponseBean.phone_number);
+                mNickNameTextInputEditText.setText(userInfoResponseBean.nick_name);
+                break;
         }
     }
 
@@ -120,13 +240,25 @@ public class AccountFragment extends BaseFragment {
             Toast.makeText(mActivity,"密码不能为空",Toast.LENGTH_SHORT).show();
             return null;
         }
-        if(TextUtils.isEmpty(phoneNumber)){
-            Toast.makeText(mActivity,"手机号不能为空",Toast.LENGTH_SHORT).show();
-            return null;
+
+        if(mClickState == CLICK_REGISTER_STATE){
+            if(TextUtils.isEmpty(phoneNumber)){
+                Toast.makeText(mActivity,"手机号不能为空",Toast.LENGTH_SHORT).show();
+                return null;
+            }else{
+                Pattern pattern = Pattern.compile("\\d+");
+                if(!pattern.matcher(phoneNumber).matches()){
+                    Toast.makeText(mActivity,"手机号格式错误",Toast.LENGTH_SHORT).show();
+                    return null;
+                }
+            }
         }
-        if(TextUtils.isEmpty(nickName)){
-            Toast.makeText(mActivity,"昵称不能为空",Toast.LENGTH_SHORT).show();
-            return null;
+
+        if(mClickState == CLICK_REGISTER_STATE){
+            if(TextUtils.isEmpty(nickName)){
+                Toast.makeText(mActivity,"昵称不能为空",Toast.LENGTH_SHORT).show();
+                return null;
+            }
         }
 
         UserInfoResponseBean userInfoResponseBean = new UserInfoResponseBean();
@@ -155,25 +287,16 @@ public class AccountFragment extends BaseFragment {
             @Override
             public void onSuccess(ResponseBaseBean responseBaseBean) {
                 UserInfoResponseBean userInfoResponseBean1 = (UserInfoResponseBean) responseBaseBean;
-                mUserNameTextInputEditText.setText("");
-                mPassWordTextInputEditText.setText("");
-                mPhoneNumberTextInputEditText.setText("");
-                mNickNameTextInputEditText.setText("");
-                mUserNameTextInputEditText.requestFocus();
-
-
-                mRegisterCardView.setVisibility(View.VISIBLE);
-                mLoginCardView.setVisibility(View.VISIBLE);
-                mLogoutCardView.setVisibility(View.GONE);
 
                 mLoadingView.setVisibility(View.GONE);
                 mLoadErrorView.setVisibility(View.GONE);
+
+                mClickState = CLICK_UNKNOWN_STATE;
+                doForkState(mClickState);
+
                 isRegistering = false;
-                if(userInfoResponseBean1.code == 0){
-                    Toast.makeText(mActivity,"注册成功!",Toast.LENGTH_LONG).show();
-                }else{
-                    Toast.makeText(mActivity,userInfoResponseBean1.desc,Toast.LENGTH_LONG).show();
-                }
+                Toast.makeText(mActivity,"注册成功!",Toast.LENGTH_LONG).show();
+
             }
 
             @Override
@@ -192,9 +315,70 @@ public class AccountFragment extends BaseFragment {
 
             @Override
             public void onServerError(ResponseBaseBean responseBaseBean) {
+
+                Toast.makeText(mActivity,responseBaseBean.desc,Toast.LENGTH_SHORT).show();
+
                 mLoadingView.setVisibility(View.GONE);
                 mLoadErrorView.setVisibility(View.GONE);
                 isRegistering = false;
+            }
+        });
+    }
+
+    public void login(){
+        UserInfoResponseBean userInfoResponseBean = createUserInfo();
+        if(null == userInfoResponseBean){
+            return;
+        }
+
+        if(isLogining){
+            return;
+        }
+        isLogining = true;
+
+        mLoadingView.setVisibility(View.VISIBLE);
+        mLoadErrorView.setVisibility(View.GONE);
+
+        HttpUtils.getInstance().register(mActivity, UserInfoResponseBean.USER_OPERATOR_LOGIN, CommonUtils.mGson.toJson(userInfoResponseBean), new NetRequestListener() {
+            @Override
+            public void onSuccess(ResponseBaseBean responseBaseBean) {
+                UserInfoResponseBean userInfoResponseBean = (UserInfoResponseBean) responseBaseBean;
+
+                SharePreUtils.getInstance(mActivity).saveUserInfo(userInfoResponseBean);
+
+                mLoadingView.setVisibility(View.GONE);
+                mLoadErrorView.setVisibility(View.GONE);
+
+                mClickState = LOGIN_SUCCESS_STATE;
+                doForkState(mClickState);
+
+                isLogining = false;
+                Toast.makeText(mActivity,"登录成功!",Toast.LENGTH_LONG).show();
+
+            }
+
+            @Override
+            public void onNetError() {
+                mLoadingView.setVisibility(View.GONE);
+                mLoadErrorView.setVisibility(View.GONE);
+                isLogining = false;
+            }
+
+            @Override
+            public void onNetError(Throwable e) {
+                mLoadingView.setVisibility(View.GONE);
+                mLoadErrorView.setVisibility(View.GONE);
+                isLogining = false;
+            }
+
+            @Override
+            public void onServerError(ResponseBaseBean responseBaseBean) {
+
+                Toast.makeText(mActivity,responseBaseBean.desc,Toast.LENGTH_SHORT).show();
+
+                mLoadingView.setVisibility(View.GONE);
+                mLoadErrorView.setVisibility(View.GONE);
+                isLogining = false;
             }
         });
     }

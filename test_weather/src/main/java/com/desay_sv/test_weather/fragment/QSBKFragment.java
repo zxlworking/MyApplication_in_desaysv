@@ -1,5 +1,7 @@
 package com.desay_sv.test_weather.fragment;
 
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -17,27 +19,25 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.desay_sv.test_weather.QSBKActivity;
 import com.desay_sv.test_weather.QSBKDetailActivity;
 import com.desay_sv.test_weather.R;
+import com.desay_sv.test_weather.custom.view.CustomScaleView;
 import com.desay_sv.test_weather.http.HttpUtils;
 import com.desay_sv.test_weather.http.data.QSBKElement;
 import com.desay_sv.test_weather.http.data.QSBKElementList;
 import com.desay_sv.test_weather.http.data.ResponseBaseBean;
 import com.desay_sv.test_weather.http.listener.NetRequestListener;
 import com.desay_sv.test_weather.utils.CommonUtils;
+import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.OkHttpClient;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
@@ -60,6 +60,8 @@ public class QSBKFragment extends BaseFragment {
     private View mLoadingView;
     private View mLoadErrorView;
     private Button mBtnErrorRefresh;
+
+    private CustomScaleView mCustomScaleView;
 
     private RecyclerView mRecyclerView;
     private QSBKAdapter mQSBKAdapter;
@@ -147,6 +149,17 @@ public class QSBKFragment extends BaseFragment {
             @Override
             public void onClick(View v) {
                 loadData(true,1);
+            }
+        });
+
+        mCustomScaleView = mContentView.findViewById(R.id.custom_scale_img);
+        ImageView scaleImg = mContentView.findViewById(R.id.scale_img);
+        mCustomScaleView.setScaleImg(scaleImg);
+
+        mCustomScaleView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCustomScaleView.setVisibility(View.GONE);
             }
         });
 
@@ -397,6 +410,12 @@ public class QSBKFragment extends BaseFragment {
                         mQSBKViewHolder.mThumbImg.setVisibility(View.VISIBLE);
                         Glide.with(mActivity).load(mQSBKElement.thumb).into(mQSBKViewHolder.mThumbImg);
 
+                        mQSBKViewHolder.mThumbImg.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                mCustomScaleView.setUrl(mQSBKElement.thumb);
+                            }
+                        });
                     }else{
                         mQSBKViewHolder.mThumbImg.setVisibility(View.GONE);
                     }
@@ -410,6 +429,49 @@ public class QSBKFragment extends BaseFragment {
                             Intent mIntent = new Intent(mActivity, QSBKDetailActivity.class);
                             mIntent.putExtra(QSBKDetailActivity.EXTRA_QSBK_ELEMENT, mQSBKElementStr);
                             startActivity(mIntent);
+                        }
+                    });
+
+                    mQSBKViewHolder.mContentTv.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            String mQSBKElementStr = CommonUtils.mGson.toJson(mQSBKElement);
+                            Intent mIntent = new Intent(mActivity, QSBKDetailActivity.class);
+                            mIntent.putExtra(QSBKDetailActivity.EXTRA_QSBK_ELEMENT, mQSBKElementStr);
+                            startActivity(mIntent);
+                        }
+                    });
+
+                    mQSBKViewHolder.mContentTv.setOnLongClickListener(new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View view) {
+                            ClipboardManager cmb = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
+                            cmb.setText(mQSBKElement.content); //将内容放入粘贴管理器,在别的地方长按选择"粘贴"即可
+                            cmb.getText();//获取粘贴信息
+                            Toast.makeText(mActivity,"复制成功",Toast.LENGTH_SHORT).show();
+                            return true;
+                        }
+                    });
+
+                    mQSBKViewHolder.mShareWechatFriendImg.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if(mQSBKElement.hasThumb()){
+                                CommonUtils.shareWXBitmap(mActivity,mQSBKElement.thumb,SendMessageToWX.Req.WXSceneTimeline);
+                            }else{
+                                CommonUtils.shareWXText(mQSBKElement.content,mActivity.getPackageName(),SendMessageToWX.Req.WXSceneTimeline);
+                            }
+                        }
+                    });
+
+                    mQSBKViewHolder.mShareWechatFriendsImg.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if(mQSBKElement.hasThumb()){
+                                CommonUtils.shareWXBitmap(mActivity,mQSBKElement.thumb,SendMessageToWX.Req.WXSceneSession);
+                            }else{
+                                CommonUtils.shareWXText(mQSBKElement.content,mActivity.getPackageName(),SendMessageToWX.Req.WXSceneSession);
+                            }
                         }
                     });
                 }
@@ -433,6 +495,8 @@ public class QSBKFragment extends BaseFragment {
         public TextView mContentTv;
         public TextView mVoteNumberTv;
         public TextView mCommentNumberTv;
+        public ImageView mShareWechatFriendImg;
+        public ImageView mShareWechatFriendsImg;
 
         public LinearLayout mAuthorSexAgeLl;
 
@@ -449,6 +513,9 @@ public class QSBKFragment extends BaseFragment {
             mVoteNumberTv = mItemView.findViewById(R.id.vote_number_tv);
             mCommentNumberTv = mItemView.findViewById(R.id.comment_number_tv);
             mAuthorSexAgeLl = mItemView.findViewById(R.id.author_sex_age_ll);
+
+            mShareWechatFriendImg = mItemView.findViewById(R.id.share_wechat_friend_img);
+            mShareWechatFriendsImg = mItemView.findViewById(R.id.share_wechat_friends_img);
         }
     }
 
@@ -471,4 +538,5 @@ public class QSBKFragment extends BaseFragment {
         @GET("/cgi_server/cgi_qsbk/cgi_qsbk.py")
         public Call<QSBKElementList> queryQSBK(@Query("page") int page);
     }
+
 }

@@ -1,5 +1,7 @@
 package com.desay_sv.test_weather.fragment;
 
+import android.app.DownloadManager;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.desay_sv.test_weather.R;
 import com.desay_sv.test_weather.http.HttpUtils;
@@ -18,6 +21,7 @@ import com.desay_sv.test_weather.http.listener.NetRequestListener;
 import com.desay_sv.test_weather.utils.CommonUtils;
 import com.desay_sv.test_weather.utils.Constants;
 import com.desay_sv.test_weather.utils.DownloadUtils;
+import com.desay_sv.test_weather.utils.SharePreUtils;
 import com.zxl.common.DebugUtil;
 
 /**
@@ -63,7 +67,13 @@ public class CheckVersionFragment extends BaseFragment {
         mCheckVersionContentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                DownloadUtils.download(mActivity, Constants.WEATHER_BASE_URL + "cgi_server/test.apk");
+                long id = SharePreUtils.getInstance(mActivity).getDownloadId();
+                if(DownloadUtils.checkStatus(mActivity,id) == DownloadManager.STATUS_PENDING ||
+                        DownloadUtils.checkStatus(mActivity,id) == DownloadManager.STATUS_RUNNING){
+                    Toast.makeText(mActivity,"已在下载队列中",Toast.LENGTH_SHORT).show();
+                }else{
+                    DownloadUtils.download(mActivity, Constants.WEATHER_BASE_URL + "cgi_server/test.apk");
+                }
             }
         });
 

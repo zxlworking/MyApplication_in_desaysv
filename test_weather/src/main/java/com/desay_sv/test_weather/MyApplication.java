@@ -2,6 +2,7 @@ package com.desay_sv.test_weather;
 
 import android.app.Application;
 
+import com.desay_sv.test_weather.utils.CommonUtils;
 import com.desay_sv.test_weather.utils.EventBusUtils;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 import com.zxl.common.DebugUtil;
@@ -12,8 +13,7 @@ import com.zxl.common.DebugUtil;
 
 public class MyApplication extends Application {
 
-    //wx3588f7555119b55e
-    //c4df129b87be31e477e921f0471d1a35
+
 
     @Override
     public void onCreate() {
@@ -21,6 +21,7 @@ public class MyApplication extends Application {
 
         DebugUtil.IS_DEBUG = DebugUtil.STATE_OPEN;
         EventBusUtils.init();
+
     }
 
     private void registerToWX() {

@@ -13,4 +13,10 @@ public class Constants {
 
     public static final String WEATHER_BASE_URL = "https://www.zxltest.cn/";
     public static final String QUERY_CITY_BASE_URL = "http://gc.ditu.aliyun.com/regeocoding/";
+
+    public static final String UPDATE_APP_NAME = "com.desay_sv.test_weather_update";
+
+    public static final String WX_APP_ID = "wx3588f7555119b55e";
+
+    public static final int THUMB_SIZE = 90;
 }

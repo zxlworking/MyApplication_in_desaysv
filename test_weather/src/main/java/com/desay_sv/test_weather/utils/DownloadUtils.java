@@ -4,15 +4,18 @@ import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.ParcelFileDescriptor;
 import android.provider.Settings;
 import android.support.v4.content.FileProvider;
 
 import com.zxl.common.DebugUtil;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -39,29 +42,17 @@ public class DownloadUtils {
         context.startActivity(intent);
     }
 
+    public static final void removeDownloadApk(Context context){
+
+    }
+
     public static final void download(Context context,String url){
         Uri uri = Uri.parse(url);
         DownloadManager.Request request = new DownloadManager.Request(uri);
         request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE | DownloadManager.Request.NETWORK_WIFI);
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
 
-        File file = new File(Environment.DIRECTORY_DOWNLOADS + "/update.apk");
-        DebugUtil.d(TAG, "download::file = " + file.exists());
-        if(!file.exists()){
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        Uri downloadFileUri;
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-            downloadFileUri = FileProvider.getUriForFile(context,"com.zxl.test_weather",file);
-        }else{
-            downloadFileUri = Uri.fromFile(file);
-        }
-
-        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,"update.apk");
+        request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS,Constants.UPDATE_APP_NAME);
 
         request.setTitle("更新");
         request.setDescription("下载更新包");
@@ -71,6 +62,8 @@ public class DownloadUtils {
 
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         downloadManager.remove(SharePreUtils.getInstance(context).getDownloadId());
+
+
         long id = downloadManager.enqueue(request);
         SharePreUtils.getInstance(context).saveDownloadId(id);
     }
@@ -99,5 +92,38 @@ public class DownloadUtils {
         } else {
             DebugUtil.d(TAG, "download error");
         }
+    }
+
+    //检查下载状态
+    public static final int checkStatus(Context context, long id) {
+        DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+        DownloadManager.Query query = new DownloadManager.Query();
+        //通过下载的id查找
+        query.setFilterById(id);
+        Cursor c = downloadManager.query(query);
+        int status = DownloadManager.STATUS_SUCCESSFUL;
+        if (c.moveToFirst()) {
+            status = c.getInt(c.getColumnIndex(DownloadManager.COLUMN_STATUS));
+            switch (status) {
+                //下载暂停
+                case DownloadManager.STATUS_PAUSED:
+                    break;
+                //下载延迟
+                case DownloadManager.STATUS_PENDING:
+                    break;
+                //正在下载
+                case DownloadManager.STATUS_RUNNING:
+                    break;
+                //下载完成
+                case DownloadManager.STATUS_SUCCESSFUL:
+                    //下载完成安装APK
+                    break;
+                //下载失败
+                case DownloadManager.STATUS_FAILED:
+                    break;
+            }
+        }
+        c.close();
+        return status;
     }
 }

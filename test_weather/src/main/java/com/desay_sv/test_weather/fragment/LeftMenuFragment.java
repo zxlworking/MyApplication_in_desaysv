@@ -66,6 +66,13 @@ public class LeftMenuFragment extends BaseFragment {
 
         setSelectedPosition(0);
 
+        mContentView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+            }
+        });
+
         return mContentView;
     }
 

@@ -34,6 +34,9 @@ import com.desay_sv.test_weather.http.data.TodayWeatherResponseBean;
 import com.desay_sv.test_weather.utils.CommonUtils;
 import com.desay_sv.test_weather.utils.Constants;
 import com.desay_sv.test_weather.utils.EventBusUtils;
+import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
+import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
+import com.tencent.mm.opensdk.modelmsg.WXTextObject;
 import com.zxl.common.DebugUtil;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -53,9 +56,10 @@ public class MainActivity extends AppCompatActivity {
 
     private String[] permissions = new String[]{
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.WRITE_SETTINGS
+//            Manifest.permission.WRITE_SETTINGS
     };
 
     private Toolbar mToolbar;
@@ -92,6 +96,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         DebugUtil.d(TAG,"onCreate");
+
+        CommonUtils.regToWX(this);
 
         mContext = this;
         EventBusUtils.register(this);
@@ -195,7 +201,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestLocatePermission() {
         if (PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                || PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                || PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                || PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                || PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             ActivityCompat.requestPermissions(this, permissions, 1);
         } else {
         }
@@ -222,21 +230,33 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         DebugUtil.d(TAG,"onBackPressed::mLeftMenuPositionStack = " + mLeftMenuPositionStack);
-        int position = Constants.LEFT_MENU_POSITION_0;
-        if(mLeftMenuPositionStack.size() > 1){
-            mLeftMenuPositionStack.pop();
-            position = mLeftMenuPositionStack.get(mLeftMenuPositionStack.size() - 1);
 
-            showContentFragment(position);
-
-            EventBusUtils.post(new BackSelectLeftMenuEvent(position));
+        if(mDrawerLayout.isDrawerOpen(mLeftMenuView)){
+            mDrawerLayout.closeDrawer(mLeftMenuView);
         }else{
-            if(!isClickBackToFinish){
-                isClickBackToFinish = true;
-                Toast.makeText(mContext,"再按一次退出",Toast.LENGTH_SHORT).show();
-                mHandler.sendEmptyMessageDelayed(MSG_CANCEL_CLICK_BACK_TO_FINISH,1500);
-            }else {
-                super.onBackPressed();
+            int position = Constants.LEFT_MENU_POSITION_0;
+            if(mLeftMenuPositionStack.size() > 1){
+                mLeftMenuPositionStack.pop();
+                position = mLeftMenuPositionStack.get(mLeftMenuPositionStack.size() - 1);
+
+                showContentFragment(position);
+
+                EventBusUtils.post(new BackSelectLeftMenuEvent(position));
+            }else{
+                if(mLeftMenuPositionStack.size() == 1 && mLeftMenuPositionStack.get(0) == Constants.LEFT_MENU_POSITION_0){
+                                        if(!isClickBackToFinish){
+                        isClickBackToFinish = true;
+                        Toast.makeText(mContext,"再按一次退出",Toast.LENGTH_SHORT).show();
+                        mHandler.sendEmptyMessageDelayed(MSG_CANCEL_CLICK_BACK_TO_FINISH,1500);
+                    }else {
+                        super.onBackPressed();
+                    }
+                }else{
+                    mLeftMenuPositionStack.clear();
+                    mLeftMenuPositionStack.push(Constants.LEFT_MENU_POSITION_0);
+                    showContentFragment(Constants.LEFT_MENU_POSITION_0);
+                    EventBusUtils.post(new BackSelectLeftMenuEvent(Constants.LEFT_MENU_POSITION_0));
+                }
             }
         }
 
@@ -257,7 +277,18 @@ public class MainActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSelectLeftMenuEvent(SelectLeftMenuEvent event){
+        int index = -1;
+        for(int i = 0; i < mLeftMenuPositionStack.size(); i++){
+            if(mLeftMenuPositionStack.get(i).intValue() == event.mPosition){
+                index = i;
+                break;
+            }
+        }
+        if(index > -1){
+            mLeftMenuPositionStack.remove(index);
+        }
         mLeftMenuPositionStack.push(event.mPosition);
+
         showContentFragment(event.mPosition);
         mDrawerLayout.closeDrawer(mLeftMenuView,true);
     }

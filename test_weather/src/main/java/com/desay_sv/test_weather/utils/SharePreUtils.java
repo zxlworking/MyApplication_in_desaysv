@@ -53,7 +53,11 @@ public class SharePreUtils {
 
     public void saveUserInfo(UserInfoResponseBean userInfoResponseBean){
         SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.putString("UserInfo",CommonUtils.mGson.toJson(userInfoResponseBean));
+        if(userInfoResponseBean != null){
+            editor.putString("UserInfo",CommonUtils.mGson.toJson(userInfoResponseBean));
+        }else{
+            editor.putString("UserInfo","");
+        }
         editor.commit();
     }
 

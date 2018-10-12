@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config>
+        //网站域名，利用属性includeSubdomains，将配置的trust-anchors可以向下作用。
+        <domain includeSubdomains="true">test_server</domain>
+        //自定义信任证书
+        <trust-anchors>
+            //信任的自定义CA证书
+            <certificates src="@raw/ca_cert" overridePins="true"/>
+        </trust-anchors>
+    </domain-config>
+</network-security-config>
