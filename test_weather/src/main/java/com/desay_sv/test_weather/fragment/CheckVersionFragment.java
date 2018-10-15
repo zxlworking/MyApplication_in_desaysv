@@ -55,8 +55,8 @@ public class CheckVersionFragment extends BaseFragment {
         mLoadingView = mContentView.findViewById(R.id.loading_view);
         mLoadingTv = mLoadingView.findViewById(R.id.loading_tv);
         mLoadErrorView = mContentView.findViewById(R.id.load_error_view);
-        mLoadErrorTv = mLoadingView.findViewById(R.id.load_error_tv);
-        mLoadErrorBtn = mLoadingView.findViewById(R.id.load_error_btn);
+        mLoadErrorTv = mLoadErrorView.findViewById(R.id.load_error_tv);
+        mLoadErrorBtn = mLoadErrorView.findViewById(R.id.load_error_btn);
 
         mCurrentVersionTv = mContentView.findViewById(R.id.current_version_tv);
 

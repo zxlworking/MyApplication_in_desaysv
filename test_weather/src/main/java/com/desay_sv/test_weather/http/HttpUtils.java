@@ -305,11 +305,11 @@ public class HttpUtils {
         }
     }
 
-    public void getQSBK(Context context, int page, final NetRequestListener listener){
+    public void getQSBK(Context context, int page, String user_id, final NetRequestListener listener){
         DebugUtil.d(TAG,"getQSBK::page = " + page);
 
         if(isNetworkAvailable(context)){
-            Observable<QSBKElementList> observable = mHttpAPI.getQSBK(page);
+            Observable<QSBKElementList> observable = mHttpAPI.getQSBK(page, user_id);
             observable.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Subscriber<ResponseBaseBean>() {
@@ -470,6 +470,90 @@ public class HttpUtils {
                     });
         }else{
             DebugUtil.d(TAG,"getUpdateInfo::net work error");
+            if(listener != null){
+                listener.onNetError();
+            }
+        }
+    }
+
+    public void collectQSBK(Context context, int collect_operator, String user_id, String qsbk_parse_element, final NetRequestListener listener){
+        DebugUtil.d(TAG,"collectQSBK::collect_operator = " + collect_operator + "::user_id = " + user_id + "::qsbk_parse_element = " + qsbk_parse_element);
+
+        if(isNetworkAvailable(context)){
+            Observable<ResponseBaseBean> observable = mHttpAPI.collect_qsbk(collect_operator, user_id, qsbk_parse_element);
+            observable.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<ResponseBaseBean>() {
+                        @Override
+                        public void onCompleted() {
+                            DebugUtil.d(TAG,"collectQSBK::onCompleted");
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            DebugUtil.d(TAG,"collectQSBK::onError::e = " + e);
+                            if(listener != null){
+                                listener.onNetError(e);
+                            }
+                        }
+
+                        @Override
+                        public void onNext(ResponseBaseBean responseBaseBean) {
+                            DebugUtil.d(TAG,"collectQSBK::onNext::responseBaseBean = " + responseBaseBean);
+                            if(listener != null){
+                                if(responseBaseBean.code == 0){
+                                    listener.onSuccess(responseBaseBean);
+                                }else{
+                                    listener.onServerError(responseBaseBean);
+                                }
+                            }
+                        }
+                    });
+        }else{
+            DebugUtil.d(TAG,"collectQSBK::net work error");
+            if(listener != null){
+                listener.onNetError();
+            }
+        }
+    }
+
+    public void getQSBKFromCollect(Context context, int page, int page_count, int collect_operator, String user_id, final NetRequestListener listener){
+        DebugUtil.d(TAG,"getQSBKFromCollect::page = " + page + "::page_count = " + page_count + "::collect_operator = " + collect_operator + "::user_id = " + user_id);
+
+        if(isNetworkAvailable(context)){
+            Observable<QSBKElementList> observable = mHttpAPI.getQSBKFromCollect(page, page_count, collect_operator, user_id);
+            observable.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Subscriber<ResponseBaseBean>() {
+                        @Override
+                        public void onCompleted() {
+                            DebugUtil.d(TAG,"getQSBKFromCollect::onCompleted");
+                        }
+
+                        @Override
+                        public void onError(Throwable e) {
+                            DebugUtil.d(TAG,"getQSBKFromCollect::onError::e = " + e);
+                            if(listener != null){
+                                listener.onNetError(e);
+                            }
+                        }
+
+                        @Override
+                        public void onNext(ResponseBaseBean responseBaseBean) {
+                            DebugUtil.d(TAG,"getQSBKFromCollect::onNext::responseBaseBean = " + responseBaseBean);
+                            if(responseBaseBean.code == 0){
+                                if(listener != null){
+                                    listener.onSuccess(responseBaseBean);
+                                }
+                            }else{
+                                if(listener != null){
+                                    listener.onServerError(responseBaseBean);
+                                }
+                            }
+                        }
+                    });
+        }else{
+            DebugUtil.d(TAG,"getQSBKFromCollect::net work error");
             if(listener != null){
                 listener.onNetError();
             }

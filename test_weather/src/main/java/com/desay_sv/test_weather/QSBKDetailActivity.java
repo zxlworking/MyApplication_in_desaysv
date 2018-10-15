@@ -1,6 +1,7 @@
 package com.desay_sv.test_weather;
 
 import android.app.Activity;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Animatable;
@@ -22,13 +23,18 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.desay_sv.test_weather.custom.view.CustomScaleView;
 import com.desay_sv.test_weather.http.data.QSBKComment;
 import com.desay_sv.test_weather.http.data.QSBKDetail;
 import com.desay_sv.test_weather.http.data.QSBKElement;
+import com.desay_sv.test_weather.utils.CommonUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
+import com.zxl.common.DebugUtil;
 
 import okhttp3.OkHttpClient;
 import retrofit2.Call;
@@ -45,6 +51,8 @@ import retrofit2.http.Query;
 
 public class QSBKDetailActivity extends Activity {
 
+    private static final String TAG = "QSBKDetailActivity";
+
     private static final int MSG_LOAD_START = 1;
     private static final int MSG_LOAD_SUCCESS = 2;
     private static final int MSG_LOAD_ERROR = 3;
@@ -59,6 +67,8 @@ public class QSBKDetailActivity extends Activity {
     private View mLoadingView;
     private View mLoadErrorView;
     private Button mBtnErrorRefresh;
+
+    private CustomScaleView mCustomScaleView;
 
     private RecyclerView mRecyclerView;
     private QSBKDetailAdapter mQSBKDetailAdapter;
@@ -117,6 +127,15 @@ public class QSBKDetailActivity extends Activity {
             }
         });
 
+        mCustomScaleView = findViewById(R.id.custom_scale_img);
+
+        mCustomScaleView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCustomScaleView.setVisibility(View.GONE);
+            }
+        });
+
 
         mRecyclerView = findViewById(R.id.recycler_view);
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(mContext);
@@ -137,6 +156,15 @@ public class QSBKDetailActivity extends Activity {
         loadData(mQSBKElement);
     }
 
+    @Override
+    public void onBackPressed() {
+        if(mCustomScaleView.getVisibility() == View.VISIBLE){
+            mCustomScaleView.setVisibility(View.GONE);
+        }else{
+            super.onBackPressed();
+        }
+    }
+
     private void loadData(final QSBKElement mQSBKElement) {
         if(isLoading){
             return;
@@ -145,7 +173,7 @@ public class QSBKDetailActivity extends Activity {
 
         mHandler.sendEmptyMessage(MSG_LOAD_START);
 
-        System.out.println("zxl--->QSBKDetailActivity loadData--->"+ mQSBKElement);
+        DebugUtil.d(TAG,"loadData::mQSBKElement = "+ mQSBKElement);
 
         new Thread(new Runnable() {
             @Override
@@ -263,10 +291,50 @@ public class QSBKDetailActivity extends Activity {
                     if(mQSBKElement.hasThumb()){
                         mQSBKDetailHeadViewHolder.mThumbImg.setVisibility(View.VISIBLE);
                         Glide.with(mContext).load(mQSBKElement.thumb).into(mQSBKDetailHeadViewHolder.mThumbImg);
+
+                        mQSBKDetailHeadViewHolder.mThumbImg.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                mCustomScaleView.setUrl(mQSBKElement.thumb);
+                            }
+                        });
                     }else{
                         mQSBKDetailHeadViewHolder.mThumbImg.setVisibility(View.GONE);
                     }
                     mQSBKDetailHeadViewHolder.mCommentCount.setText("评论("+mQsbkDetail.user_comment_list.size()+")：");
+
+                    mQSBKDetailHeadViewHolder.mContentTv.setOnLongClickListener(new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View view) {
+                            ClipboardManager cmb = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                            cmb.setText(mQSBKElement.content); //将内容放入粘贴管理器,在别的地方长按选择"粘贴"即可
+                            cmb.getText();//获取粘贴信息
+                            Toast.makeText(mContext,"复制成功",Toast.LENGTH_SHORT).show();
+                            return true;
+                        }
+                    });
+
+                    mQSBKDetailHeadViewHolder.mShareWechatFriendImg.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if(mQSBKElement.hasThumb()){
+                                CommonUtils.shareWXBitmap(mContext,mQSBKElement.thumb, SendMessageToWX.Req.WXSceneTimeline);
+                            }else{
+                                CommonUtils.shareWXText(mQSBKElement.content,mContext.getPackageName(),SendMessageToWX.Req.WXSceneTimeline);
+                            }
+                        }
+                    });
+
+                    mQSBKDetailHeadViewHolder.mShareWechatFriendsImg.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if(mQSBKElement.hasThumb()){
+                                CommonUtils.shareWXBitmap(mContext,mQSBKElement.thumb,SendMessageToWX.Req.WXSceneSession);
+                            }else{
+                                CommonUtils.shareWXText(mQSBKElement.content,mContext.getPackageName(),SendMessageToWX.Req.WXSceneSession);
+                            }
+                        }
+                    });
                 }
             }else{
                 QSBKComment mQsbkComment = mQsbkDetail.user_comment_list.get(position - 1);
@@ -305,6 +373,8 @@ public class QSBKDetailActivity extends Activity {
         public TextView mAuthorAgeTv;
         public TextView mContentTv;
         public TextView mCommentCount;
+        public ImageView mShareWechatFriendImg;
+        public ImageView mShareWechatFriendsImg;
 
         public LinearLayout mAuthorSexAgeLl;
 
@@ -320,6 +390,9 @@ public class QSBKDetailActivity extends Activity {
             mContentTv = mItemView.findViewById(R.id.content_tv);
             mCommentCount = mItemView.findViewById(R.id.comment_count);
             mAuthorSexAgeLl = mItemView.findViewById(R.id.author_sex_age_ll);
+
+            mShareWechatFriendImg = mItemView.findViewById(R.id.share_wechat_friend_img);
+            mShareWechatFriendsImg = mItemView.findViewById(R.id.share_wechat_friends_img);
         }
     }
 

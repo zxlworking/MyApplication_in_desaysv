@@ -29,7 +29,7 @@ import org.greenrobot.eventbus.ThreadMode;
 public class LeftMenuFragment extends BaseFragment {
     private static final String TAG = "LeftMenuFragment";
 
-    private static final String[] MENU_TITLE_ARRAY = new String[]{"笑话","美女","账号","版本更新"};
+    private static final String[] MENU_TITLE_ARRAY = new String[]{"笑话","美女","收藏","账号","版本更新"};
 
     private View mContentView;
 

@@ -10,6 +10,7 @@ public class Constants {
     public static final int LEFT_MENU_POSITION_1 = 1;
     public static final int LEFT_MENU_POSITION_2 = 2;
     public static final int LEFT_MENU_POSITION_3 = 3;
+    public static final int LEFT_MENU_POSITION_4 = 4;
 
     public static final String WEATHER_BASE_URL = "https://www.zxltest.cn/";
     public static final String QUERY_CITY_BASE_URL = "http://gc.ditu.aliyun.com/regeocoding/";

@@ -18,14 +18,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.desay_sv.test_weather.event.BackSelectLeftMenuEvent;
 import com.desay_sv.test_weather.event.LocatePermissionSuccessEvent;
 import com.desay_sv.test_weather.event.RequestLocatePermissionEvent;
 import com.desay_sv.test_weather.event.SelectLeftMenuEvent;
 import com.desay_sv.test_weather.fragment.AccountFragment;
 import com.desay_sv.test_weather.fragment.CheckVersionFragment;
+import com.desay_sv.test_weather.fragment.CollectQSBKFragment;
 import com.desay_sv.test_weather.fragment.LeftMenuFragment;
 import com.desay_sv.test_weather.fragment.QSBKFragment;
 import com.desay_sv.test_weather.fragment.TaoBaoAnchorFragment;
@@ -165,6 +168,8 @@ public class MainActivity extends AppCompatActivity {
         mContentFragments.add(mQSBKFragment);
         TaoBaoAnchorFragment mTaoBaoAnchorFragment = (TaoBaoAnchorFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.TaoBaoAnchorFragment");
         mContentFragments.add(mTaoBaoAnchorFragment);
+        CollectQSBKFragment mCollectQSBKFragment = (CollectQSBKFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.CollectQSBKFragment");
+        mContentFragments.add(mCollectQSBKFragment);
         AccountFragment mAccountFragment = (AccountFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.AccountFragment");
         mContentFragments.add(mAccountFragment);
         CheckVersionFragment mCheckVersionFragment = (CheckVersionFragment) Fragment.instantiate(mContext,"com.desay_sv.test_weather.fragment.CheckVersionFragment");
@@ -235,6 +240,18 @@ public class MainActivity extends AppCompatActivity {
             mDrawerLayout.closeDrawer(mLeftMenuView);
         }else{
             int position = Constants.LEFT_MENU_POSITION_0;
+
+            if(mLeftMenuPositionStack.size() > 0){
+                position = mLeftMenuPositionStack.get(mLeftMenuPositionStack.size() - 1);
+                if(mContentFragments.get(position) instanceof QSBKFragment){
+                    QSBKFragment qsbkFragment = (QSBKFragment) mContentFragments.get(position);
+                    boolean isNeedHand = qsbkFragment.onBackPressed();
+                    if(isNeedHand){
+                        return;
+                    }
+                }
+            }
+
             if(mLeftMenuPositionStack.size() > 1){
                 mLeftMenuPositionStack.pop();
                 position = mLeftMenuPositionStack.get(mLeftMenuPositionStack.size() - 1);
@@ -244,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
                 EventBusUtils.post(new BackSelectLeftMenuEvent(position));
             }else{
                 if(mLeftMenuPositionStack.size() == 1 && mLeftMenuPositionStack.get(0) == Constants.LEFT_MENU_POSITION_0){
-                                        if(!isClickBackToFinish){
+                    if(!isClickBackToFinish){
                         isClickBackToFinish = true;
                         Toast.makeText(mContext,"再按一次退出",Toast.LENGTH_SHORT).show();
                         mHandler.sendEmptyMessageDelayed(MSG_CANCEL_CLICK_BACK_TO_FINISH,1500);
@@ -277,15 +294,19 @@ public class MainActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onSelectLeftMenuEvent(SelectLeftMenuEvent event){
-        int index = -1;
-        for(int i = 0; i < mLeftMenuPositionStack.size(); i++){
-            if(mLeftMenuPositionStack.get(i).intValue() == event.mPosition){
-                index = i;
-                break;
+        if(event.mPosition == Constants.LEFT_MENU_POSITION_0){
+            mLeftMenuPositionStack.clear();
+        }else{
+            int index = -1;
+            for(int i = 0; i < mLeftMenuPositionStack.size(); i++){
+                if(mLeftMenuPositionStack.get(i).intValue() == event.mPosition){
+                    index = i;
+                    break;
+                }
             }
-        }
-        if(index > -1){
-            mLeftMenuPositionStack.remove(index);
+            if(index > -1){
+                mLeftMenuPositionStack.remove(index);
+            }
         }
         mLeftMenuPositionStack.push(event.mPosition);
 

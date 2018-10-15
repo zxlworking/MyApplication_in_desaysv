@@ -1,68 +1,56 @@
-package com.desay_sv.test_weather;
+package com.desay_sv.test_weather.fragment;
 
-import android.Manifest;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.drawable.Animatable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
-import android.util.Log;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.desay_sv.test_weather.custom.view.TodayWeatherView;
-import com.desay_sv.test_weather.event.LocatePermissionSuccessEvent;
-import com.desay_sv.test_weather.event.RequestLocatePermissionEvent;
+import com.desay_sv.test_weather.QSBKActivity;
+import com.desay_sv.test_weather.QSBKDetailActivity;
+import com.desay_sv.test_weather.R;
+import com.desay_sv.test_weather.custom.view.CustomScaleView;
 import com.desay_sv.test_weather.http.HttpUtils;
 import com.desay_sv.test_weather.http.data.QSBKElement;
 import com.desay_sv.test_weather.http.data.QSBKElementList;
 import com.desay_sv.test_weather.http.data.ResponseBaseBean;
+import com.desay_sv.test_weather.http.data.UserInfoResponseBean;
 import com.desay_sv.test_weather.http.listener.NetRequestListener;
-import com.desay_sv.test_weather.utils.EventBusUtils;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.desay_sv.test_weather.utils.CommonUtils;
+import com.desay_sv.test_weather.utils.SharePreUtils;
+import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
 import com.zxl.common.DebugUtil;
-
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import okhttp3.OkHttpClient;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 
-public class QSBKActivity extends AppCompatActivity {
+/**
+ * Created by zxl on 2018/9/20.
+ */
 
-    private static final String TAG = "QSBKActivity";
+public class CollectQSBKFragment extends BaseFragment {
+    private static final String TAG = "CollectQSBKFragment";
 
     private static final int MSG_FIRST_LOAD_START = 1;
     private static final int MSG_FIRST_LOAD_SUCCESS = 2;
@@ -71,31 +59,24 @@ public class QSBKActivity extends AppCompatActivity {
     private static final int MSG_LOAD_SUCCESS = 5;
     private static final int MSG_LOAD_ERROR = 6;
 
-    private String[] permissions = new String[]{
-            Manifest.permission.ACCESS_COARSE_LOCATION,
-            Manifest.permission.ACCESS_FINE_LOCATION
-    };
-
-    private Context mContext;
-
-    private Retrofit mRetrofit;
-    private IQueryQSBK mIQueryQSBK;
+    private View mContentView;
 
     private View mLoadingView;
     private View mLoadErrorView;
     private Button mBtnErrorRefresh;
 
-    private AppBarLayout mAppBarLayout;
-    private Toolbar mToolbar;
-    private TodayWeatherView mTodayWeatherView;
+    private CustomScaleView mCustomScaleView;
 
     private RecyclerView mRecyclerView;
-    private CalculateAdapter mCalculateAdapter;
+    private QSBKAdapter mQSBKAdapter;
 
     private SwipeRefreshLayout mSwipeRefreshLayout;
 
-    private int mCurrentPage = 1;
-    private int mTotalPage = Integer.MAX_VALUE;
+//    private Retrofit mRetrofit;
+//    private IQueryQSBK mIQueryQSBK;
+
+    private int mCurrentPage = 0;
+    private int mTotalPage = 0;
     private int mPageCount = 10;
 
     private boolean isLoading = false;
@@ -115,7 +96,7 @@ public class QSBKActivity extends AppCompatActivity {
                     mLoadErrorView.setVisibility(View.GONE);
 
                     List<QSBKElement> mFirstTemp = (List<QSBKElement>) msg.obj;
-                    mCalculateAdapter.setData(mFirstTemp);
+                    mQSBKAdapter.setData(mFirstTemp);
 
                     isLoading = false;
                     mSwipeRefreshLayout.setRefreshing(false);
@@ -139,7 +120,7 @@ public class QSBKActivity extends AppCompatActivity {
                     mLoadErrorView.setVisibility(View.GONE);
 
                     List<QSBKElement> mTemp = (List<QSBKElement>) msg.obj;
-                    mCalculateAdapter.addData(mTemp);
+                    mQSBKAdapter.addData(mTemp);
 
                     isLoading = false;
                     mSwipeRefreshLayout.setRefreshing(false);
@@ -149,7 +130,7 @@ public class QSBKActivity extends AppCompatActivity {
                     mLoadingView.setVisibility(View.GONE);
                     mLoadErrorView.setVisibility(View.GONE);
 
-                    mCalculateAdapter.setLoadDataState(CalculateAdapter.LOAD_DATA_ERROR_STATE);
+                    mQSBKAdapter.setLoadDataState(QSBKActivity.CalculateAdapter.LOAD_DATA_ERROR_STATE);
 
                     isLoading = false;
                     mSwipeRefreshLayout.setRefreshing(false);
@@ -158,64 +139,82 @@ public class QSBKActivity extends AppCompatActivity {
         }
     };
 
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        EventBusUtils.register(this);
+        mContentView = inflater.inflate(R.layout.fragment_qsbk,null);
 
-        setContentView(R.layout.activity_qsbk);
-
-        mContext = this;
-
-        mAppBarLayout = findViewById(R.id.main_app_bar);
-        mToolbar = findViewById(R.id.tool_bar);
-        mTodayWeatherView = findViewById(R.id.today_weather_view);
-
-        mLoadingView = findViewById(R.id.qsbk_loading_view);
-        mLoadErrorView = findViewById(R.id.qsbk_load_error_view);
+        mLoadingView = mContentView.findViewById(R.id.qsbk_loading_view);
+        mLoadErrorView = mContentView.findViewById(R.id.qsbk_load_error_view);
         mBtnErrorRefresh = mLoadErrorView.findViewById(R.id.load_error_btn);
 
         mBtnErrorRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadData(true,1);
+                mCurrentPage = 0;
+                loadData(true,0);
             }
         });
 
-        mRecyclerView = findViewById(R.id.recycler_view);
-        LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(mContext);
-        mRecyclerView.setLayoutManager(mLinearLayoutManager);
-        mCalculateAdapter = new CalculateAdapter();
-        mRecyclerView.setAdapter(mCalculateAdapter);
+        mCustomScaleView = mContentView.findViewById(R.id.custom_scale_img);
 
-        mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
+        mCustomScaleView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mCustomScaleView.setVisibility(View.GONE);
+            }
+        });
+
+        mRecyclerView = mContentView.findViewById(R.id.recycler_view);
+        LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(mActivity);
+        mRecyclerView.setLayoutManager(mLinearLayoutManager);
+        mQSBKAdapter = new QSBKAdapter();
+        mRecyclerView.setAdapter(mQSBKAdapter);
+
+        mSwipeRefreshLayout = mContentView.findViewById(R.id.swipe_refresh_layout);
         mSwipeRefreshLayout.setColorSchemeColors(Color.parseColor("#3F51B5"),Color.parseColor("#303F9F"),Color.parseColor("#FF4081"));
         mSwipeRefreshLayout.setRefreshing(false);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 mSwipeRefreshLayout.setRefreshing(true);
-                loadData(true,1);
+                mCurrentPage = 0;
+                loadData(true,0);
             }
         });
 
-        OkHttpClient mOkHttpClient = new OkHttpClient.Builder().build();
-        mRetrofit = new Retrofit.Builder()
-                //.baseUrl("http://www.zxltest.cn/")
-                .baseUrl("http://118.25.178.69/")
-                .client(mOkHttpClient)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        mIQueryQSBK = mRetrofit.create(IQueryQSBK.class);
+//        OkHttpClient mOkHttpClient = new OkHttpClient.Builder().build();
+//        mRetrofit = new Retrofit.Builder()
+//                //.baseUrl("http://www.zxltest.cn/")
+//                .baseUrl("http://118.25.178.69/")
+//                .client(mOkHttpClient)
+//                .addConverterFactory(GsonConverterFactory.create())
+//                .build();
+//        mIQueryQSBK = mRetrofit.create(IQueryQSBK.class);
 
-        mTodayWeatherView.setToolbar(mToolbar);
-        mToolbar.setTitle("今日天气");
-
-        loadData(true, 1);
+        return mContentView;
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        mCurrentPage = 0;
+        loadData(true, 0);
+    }
+
+    public boolean onBackPressed(){
+        if(mCustomScaleView.getVisibility() == View.VISIBLE){
+            mCustomScaleView.setVisibility(View.GONE);
+            return true;
+        }
+        return false;
+    }
+
+
     public void loadData(final boolean isFirstLoad, final int page){
+        DebugUtil.d(TAG,"loadData::page = " + page);
         if(isLoading){
             return;
         }
@@ -227,12 +226,16 @@ public class QSBKActivity extends AppCompatActivity {
             mHandler.sendEmptyMessage(MSG_LOAD_START);
         }
 
-        HttpUtils.getInstance().getQSBK(mContext, page, "", new NetRequestListener() {
+        UserInfoResponseBean userInfoResponseBean = SharePreUtils.getInstance(mActivity).getUserInfo();
+
+        HttpUtils.getInstance().getQSBKFromCollect(mActivity, page,mPageCount,QSBKElement.QSBK_COLLECT_OPERATOR_QUERY_ALL, (userInfoResponseBean != null ? userInfoResponseBean.user_id : ""),new NetRequestListener() {
             @Override
             public void onSuccess(ResponseBaseBean responseBaseBean) {
                 QSBKElementList mQSBKElementList = (QSBKElementList) responseBaseBean;
 
                 mCurrentPage = mQSBKElementList.current_page;
+                mTotalPage = mQSBKElementList.total_page;
+
                 if(isFirstLoad){
                     Message message = mHandler.obtainMessage();
                     message.what = MSG_FIRST_LOAD_SUCCESS;
@@ -273,83 +276,52 @@ public class QSBKActivity extends AppCompatActivity {
                 }
             }
         });
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Call<QSBKElementList> mCall = mIQueryQSBK.queryQSBK(page);
-                mCall.enqueue(new Callback<QSBKElementList>() {
-                    @Override
-                    public void onResponse(Call<QSBKElementList> call, Response<QSBKElementList> response) {
-                        QSBKElementList mQSBKElementList = response.body();
-                        System.out.println("zxl--->onResponse--->"+ mQSBKElementList);
-
-                        mCurrentPage = mQSBKElementList.current_page;
-                        if(isFirstLoad){
-                            Message message = mHandler.obtainMessage();
-                            message.what = MSG_FIRST_LOAD_SUCCESS;
-                            message.obj = mQSBKElementList.result;
-                            message.sendToTarget();
-                        }else{
-                            Message message = mHandler.obtainMessage();
-                            message.what = MSG_LOAD_SUCCESS;
-                            message.obj = mQSBKElementList.result;
-                            message.sendToTarget();
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<QSBKElementList> call, Throwable t) {
-                        System.out.println("zxl--->onFailure--->"+t.toString());
-                        if(isFirstLoad){
-                            mHandler.sendEmptyMessage(MSG_FIRST_LOAD_ERROR);
-                        }else{
-                            mHandler.sendEmptyMessage(MSG_LOAD_ERROR);
-                        }
-                    }
-                });
-
-            }
-        }).start();
     }
 
-    private void requestLocatePermission() {
-        if (PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)
-                || PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            ActivityCompat.requestPermissions(this, permissions, 1);
-        } else {
-        }
-    }
+    public void doForCollect(final int operator, final int position, final QSBKElement qsbkElement){
+        UserInfoResponseBean userInfoResponseBean = SharePreUtils.getInstance(mActivity).getUserInfo();
+        if(userInfoResponseBean != null){
+            HttpUtils.getInstance().collectQSBK(mActivity, operator, userInfoResponseBean.user_id, CommonUtils.mGson.toJson(qsbkElement), new NetRequestListener() {
+                @Override
+                public void onSuccess(ResponseBaseBean responseBaseBean) {
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        boolean isPermissionOk = true;
-        if (requestCode == 1) {
-            for (int result : grantResults) {
-                if (result != PackageManager.PERMISSION_GRANTED) {
-                    isPermissionOk = false;
-                    break;
+                    if(QSBKElement.QSBK_COLLECT_OPERATOR_COLLECT == operator){
+                        if(position < mQSBKAdapter.getData().size() && TextUtils.equals(mQSBKAdapter.getData().get(position).author_id, qsbkElement.author_id)){
+                            mQSBKAdapter.getData().get(position).is_collect = true;
+                            mQSBKAdapter.notifyItemChanged(position);
+                        }
+                        Toast.makeText(mActivity,"已收藏",Toast.LENGTH_SHORT).show();
+                    }
+                    if(QSBKElement.QSBK_COLLECT_OPERATOR_CANCEL == operator){
+                        if(position < mQSBKAdapter.getData().size() && TextUtils.equals(mQSBKAdapter.getData().get(position).author_id, qsbkElement.author_id)){
+                            mQSBKAdapter.getData().remove(position);
+                            mQSBKAdapter.notifyItemRemoved(position);
+                        }
+                        Toast.makeText(mActivity,"已取消收藏",Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
+
+                @Override
+                public void onNetError() {
+                    Toast.makeText(mActivity,mActivity.getResources().getString(R.string.no_network_tip),Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onNetError(Throwable e) {
+                    Toast.makeText(mActivity,mActivity.getResources().getString(R.string.network_error_tip),Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onServerError(ResponseBaseBean responseBaseBean) {
+                    Toast.makeText(mActivity,responseBaseBean.desc,Toast.LENGTH_SHORT).show();
+                }
+            });
+        }else{
+            Toast.makeText(mActivity,"请先登录",Toast.LENGTH_SHORT).show();
         }
-        if(isPermissionOk){
-            EventBusUtils.post(new LocatePermissionSuccessEvent());
-        }
-        DebugUtil.d(TAG,"onRequestPermissionsResult::isPermissionOk = " + isPermissionOk);
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        EventBusUtils.unregister(this);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRequestDoLocateEvent(RequestLocatePermissionEvent event){
-        requestLocatePermission();
-    }
-    public class CalculateAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
+    public class QSBKAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
         public static final int LOADING_DATA_STATE = 1;
         public static final int LOAD_DATA_SUCCESS_STATE =2 ;
@@ -374,6 +346,10 @@ public class QSBKActivity extends AppCompatActivity {
             notifyDataSetChanged();
         }
 
+        public List<QSBKElement> getData(){
+            return mQSBKElements;
+        }
+
         public void setLoadDataState(int state){
             mCurrentState = state;
             notifyDataSetChanged();
@@ -392,17 +368,17 @@ public class QSBKActivity extends AppCompatActivity {
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             switch (viewType){
                 case CONTENT_TYPE:
-                    View mItemView = LayoutInflater.from(mContext).inflate(R.layout.item_qsbk_view, parent, false);
+                    View mItemView = LayoutInflater.from(mActivity).inflate(R.layout.item_qsbk_view, parent, false);
                     return new QSBKViewHolder(mItemView);
                 case FOOT_TYPE:
-                    View mItemFootView = LayoutInflater.from(mContext).inflate(R.layout.item_qsbk_foot_view, parent, false);
+                    View mItemFootView = LayoutInflater.from(mActivity).inflate(R.layout.item_qsbk_foot_view, parent, false);
                     return new QSBKFootViewHolder(mItemFootView);
             }
             return null;
         }
 
         @Override
-        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int position) {
             QSBKViewHolder mQSBKViewHolder = null;
             if(holder instanceof QSBKViewHolder){
                 mQSBKViewHolder = (QSBKViewHolder) holder;
@@ -432,7 +408,7 @@ public class QSBKActivity extends AppCompatActivity {
                         mBtnErrorRefresh.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                mCalculateAdapter.setLoadDataState(CalculateAdapter.LOADING_DATA_STATE);
+                                mQSBKAdapter.setLoadDataState(QSBKAdapter.LOADING_DATA_STATE);
                                 loadData(false, mCurrentPage + 1);
                             }
                         });
@@ -441,8 +417,17 @@ public class QSBKActivity extends AppCompatActivity {
             }else{
                 if(mQSBKViewHolder != null){
                     final QSBKElement mQSBKElement = mQSBKElements.get(position);
-                    Glide.with(mContext).load(mQSBKElement.author_head_img).into(mQSBKViewHolder.mAuthorHeadImg);
+
+                    Glide.with(mActivity).load(mQSBKElement.author_head_img).into(mQSBKViewHolder.mAuthorHeadImg);
+
                     mQSBKViewHolder.mAuthorNameTv.setText(mQSBKElement.author_name);
+
+                    if(mQSBKElement.is_collect){
+                        mQSBKViewHolder.mCollectImg.setImageResource(R.mipmap.collect_select_icon);
+                    }else{
+                        mQSBKViewHolder.mCollectImg.setImageResource(R.mipmap.collect_cancel_icon);
+                    }
+
                     if(mQSBKElement.isAnonymity()){
                         mQSBKViewHolder.mAuthorSexAgeLl.setVisibility(View.GONE);
                     }else{
@@ -461,8 +446,14 @@ public class QSBKActivity extends AppCompatActivity {
                     mQSBKViewHolder.mContentTv.setText(mQSBKElement.content);
                     if(mQSBKElement.hasThumb()){
                         mQSBKViewHolder.mThumbImg.setVisibility(View.VISIBLE);
-                        Glide.with(mContext).load(mQSBKElement.thumb).into(mQSBKViewHolder.mThumbImg);
+                        Glide.with(mActivity).load(mQSBKElement.thumb).into(mQSBKViewHolder.mThumbImg);
 
+                        mQSBKViewHolder.mThumbImg.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                mCustomScaleView.setUrl(mQSBKElement.thumb);
+                            }
+                        });
                     }else{
                         mQSBKViewHolder.mThumbImg.setVisibility(View.GONE);
                     }
@@ -472,11 +463,64 @@ public class QSBKActivity extends AppCompatActivity {
                     mQSBKViewHolder.mItemView.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            Gson mGson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
-                            String mQSBKElementStr = mGson.toJson(mQSBKElement);
-                            Intent mIntent = new Intent(mContext, QSBKDetailActivity.class);
+                            String mQSBKElementStr = CommonUtils.mGson.toJson(mQSBKElement);
+                            Intent mIntent = new Intent(mActivity, QSBKDetailActivity.class);
                             mIntent.putExtra(QSBKDetailActivity.EXTRA_QSBK_ELEMENT, mQSBKElementStr);
                             startActivity(mIntent);
+                        }
+                    });
+
+                    mQSBKViewHolder.mContentTv.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            String mQSBKElementStr = CommonUtils.mGson.toJson(mQSBKElement);
+                            Intent mIntent = new Intent(mActivity, QSBKDetailActivity.class);
+                            mIntent.putExtra(QSBKDetailActivity.EXTRA_QSBK_ELEMENT, mQSBKElementStr);
+                            startActivity(mIntent);
+                        }
+                    });
+
+                    mQSBKViewHolder.mContentTv.setOnLongClickListener(new View.OnLongClickListener() {
+                        @Override
+                        public boolean onLongClick(View view) {
+                            ClipboardManager cmb = (ClipboardManager) mActivity.getSystemService(Context.CLIPBOARD_SERVICE);
+                            cmb.setText(mQSBKElement.content); //将内容放入粘贴管理器,在别的地方长按选择"粘贴"即可
+                            cmb.getText();//获取粘贴信息
+                            Toast.makeText(mActivity,"复制成功",Toast.LENGTH_SHORT).show();
+                            return true;
+                        }
+                    });
+
+                    mQSBKViewHolder.mShareWechatFriendImg.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if(mQSBKElement.hasThumb()){
+                                CommonUtils.shareWXBitmap(mActivity,mQSBKElement.thumb,SendMessageToWX.Req.WXSceneTimeline);
+                            }else{
+                                CommonUtils.shareWXText(mQSBKElement.content,mActivity.getPackageName(),SendMessageToWX.Req.WXSceneTimeline);
+                            }
+                        }
+                    });
+
+                    mQSBKViewHolder.mShareWechatFriendsImg.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if(mQSBKElement.hasThumb()){
+                                CommonUtils.shareWXBitmap(mActivity,mQSBKElement.thumb,SendMessageToWX.Req.WXSceneSession);
+                            }else{
+                                CommonUtils.shareWXText(mQSBKElement.content,mActivity.getPackageName(),SendMessageToWX.Req.WXSceneSession);
+                            }
+                        }
+                    });
+
+                    mQSBKViewHolder.mCollectImg.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if(!mQSBKElement.is_collect){
+                                doForCollect(QSBKElement.QSBK_COLLECT_OPERATOR_COLLECT, position, mQSBKElement);
+                            }else{
+                                doForCollect(QSBKElement.QSBK_COLLECT_OPERATOR_CANCEL, position, mQSBKElement);
+                            }
                         }
                     });
                 }
@@ -500,6 +544,9 @@ public class QSBKActivity extends AppCompatActivity {
         public TextView mContentTv;
         public TextView mVoteNumberTv;
         public TextView mCommentNumberTv;
+        public ImageView mShareWechatFriendImg;
+        public ImageView mShareWechatFriendsImg;
+        public ImageView mCollectImg;
 
         public LinearLayout mAuthorSexAgeLl;
 
@@ -516,6 +563,11 @@ public class QSBKActivity extends AppCompatActivity {
             mVoteNumberTv = mItemView.findViewById(R.id.vote_number_tv);
             mCommentNumberTv = mItemView.findViewById(R.id.comment_number_tv);
             mAuthorSexAgeLl = mItemView.findViewById(R.id.author_sex_age_ll);
+
+            mShareWechatFriendImg = mItemView.findViewById(R.id.share_wechat_friend_img);
+            mShareWechatFriendsImg = mItemView.findViewById(R.id.share_wechat_friends_img);
+
+            mCollectImg = mItemView.findViewById(R.id.collect_img);
         }
     }
 
@@ -532,10 +584,5 @@ public class QSBKActivity extends AppCompatActivity {
             mLoadingView = mItemView.findViewById(R.id.loading_view);
             mLoadErrorView = mItemView.findViewById(R.id.load_error_view);
         }
-    }
-
-    public interface IQueryQSBK{
-        @GET("/cgi_server/cgi_qsbk/cgi_qsbk.py")
-        public Call<QSBKElementList> queryQSBK(@Query("page") int page);
     }
 }

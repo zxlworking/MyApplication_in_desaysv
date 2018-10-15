@@ -127,7 +127,7 @@ public class QSBKView extends CardView {
         mLoadErrorView.setVisibility(GONE);
         mQSBKContentView.setVisibility(INVISIBLE);
 
-        HttpUtils.getInstance().getQSBK(mContext, page, new NetRequestListener() {
+        HttpUtils.getInstance().getQSBK(mContext, page, "", new NetRequestListener() {
             @Override
             public void onSuccess(ResponseBaseBean responseBaseBean) {
 

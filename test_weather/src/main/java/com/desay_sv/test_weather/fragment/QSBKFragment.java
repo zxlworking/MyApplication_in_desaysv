@@ -12,6 +12,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,9 +32,12 @@ import com.desay_sv.test_weather.http.HttpUtils;
 import com.desay_sv.test_weather.http.data.QSBKElement;
 import com.desay_sv.test_weather.http.data.QSBKElementList;
 import com.desay_sv.test_weather.http.data.ResponseBaseBean;
+import com.desay_sv.test_weather.http.data.UserInfoResponseBean;
 import com.desay_sv.test_weather.http.listener.NetRequestListener;
 import com.desay_sv.test_weather.utils.CommonUtils;
+import com.desay_sv.test_weather.utils.SharePreUtils;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
+import com.zxl.common.DebugUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +52,7 @@ import retrofit2.http.Query;
 
 public class QSBKFragment extends BaseFragment {
     private static final String TAG = "QSBKFragment";
+
 
     private static final int MSG_FIRST_LOAD_START = 1;
     private static final int MSG_FIRST_LOAD_SUCCESS = 2;
@@ -153,8 +159,6 @@ public class QSBKFragment extends BaseFragment {
         });
 
         mCustomScaleView = mContentView.findViewById(R.id.custom_scale_img);
-        ImageView scaleImg = mContentView.findViewById(R.id.scale_img);
-        mCustomScaleView.setScaleImg(scaleImg);
 
         mCustomScaleView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -198,6 +202,15 @@ public class QSBKFragment extends BaseFragment {
         loadData(true, 1);
     }
 
+    public boolean onBackPressed(){
+        if(mCustomScaleView.getVisibility() == View.VISIBLE){
+            mCustomScaleView.setVisibility(View.GONE);
+            return true;
+        }
+        return false;
+    }
+
+
     public void loadData(final boolean isFirstLoad, final int page){
         if(isLoading){
             return;
@@ -210,7 +223,9 @@ public class QSBKFragment extends BaseFragment {
             mHandler.sendEmptyMessage(MSG_LOAD_START);
         }
 
-        HttpUtils.getInstance().getQSBK(mActivity, page, new NetRequestListener() {
+        UserInfoResponseBean userInfoResponseBean = SharePreUtils.getInstance(mActivity).getUserInfo();
+
+        HttpUtils.getInstance().getQSBK(mActivity, page, (userInfoResponseBean != null ? userInfoResponseBean.user_id : ""),new NetRequestListener() {
             @Override
             public void onSuccess(ResponseBaseBean responseBaseBean) {
                 QSBKElementList mQSBKElementList = (QSBKElementList) responseBaseBean;
@@ -256,44 +271,49 @@ public class QSBKFragment extends BaseFragment {
                 }
             }
         });
+    }
 
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                Call<QSBKElementList> mCall = mIQueryQSBK.queryQSBK(page);
-//                mCall.enqueue(new Callback<QSBKElementList>() {
-//                    @Override
-//                    public void onResponse(Call<QSBKElementList> call, Response<QSBKElementList> response) {
-//                        QSBKElementList mQSBKElementList = response.body();
-//                        System.out.println("zxl--->onResponse--->"+ mQSBKElementList);
-//
-//                        mCurrentPage = mQSBKElementList.current_page;
-//                        if(isFirstLoad){
-//                            Message message = mHandler.obtainMessage();
-//                            message.what = MSG_FIRST_LOAD_SUCCESS;
-//                            message.obj = mQSBKElementList.result;
-//                            message.sendToTarget();
-//                        }else{
-//                            Message message = mHandler.obtainMessage();
-//                            message.what = MSG_LOAD_SUCCESS;
-//                            message.obj = mQSBKElementList.result;
-//                            message.sendToTarget();
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onFailure(Call<QSBKElementList> call, Throwable t) {
-//                        System.out.println("zxl--->onFailure--->"+t.toString());
-//                        if(isFirstLoad){
-//                            mHandler.sendEmptyMessage(MSG_FIRST_LOAD_ERROR);
-//                        }else{
-//                            mHandler.sendEmptyMessage(MSG_LOAD_ERROR);
-//                        }
-//                    }
-//                });
-//
-//            }
-//        }).start();
+    public void doForCollect(final int operator, final int position, final QSBKElement qsbkElement){
+        UserInfoResponseBean userInfoResponseBean = SharePreUtils.getInstance(mActivity).getUserInfo();
+        if(userInfoResponseBean != null){
+            HttpUtils.getInstance().collectQSBK(mActivity, operator, userInfoResponseBean.user_id, CommonUtils.mGson.toJson(qsbkElement), new NetRequestListener() {
+                @Override
+                public void onSuccess(ResponseBaseBean responseBaseBean) {
+
+                    if(QSBKElement.QSBK_COLLECT_OPERATOR_COLLECT == operator){
+                        if(position < mQSBKAdapter.getData().size() && TextUtils.equals(mQSBKAdapter.getData().get(position).author_id, qsbkElement.author_id)){
+                            mQSBKAdapter.getData().get(position).is_collect = true;
+                            mQSBKAdapter.notifyItemChanged(position);
+                        }
+                        Toast.makeText(mActivity,"已收藏",Toast.LENGTH_SHORT).show();
+                    }
+                    if(QSBKElement.QSBK_COLLECT_OPERATOR_CANCEL == operator){
+                        if(position < mQSBKAdapter.getData().size() && TextUtils.equals(mQSBKAdapter.getData().get(position).author_id, qsbkElement.author_id)){
+                            mQSBKAdapter.getData().get(position).is_collect = false;
+                            mQSBKAdapter.notifyItemChanged(position);
+                        }
+                        Toast.makeText(mActivity,"已取消收藏",Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onNetError() {
+                    Toast.makeText(mActivity,mActivity.getResources().getString(R.string.no_network_tip),Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onNetError(Throwable e) {
+                    Toast.makeText(mActivity,mActivity.getResources().getString(R.string.network_error_tip),Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onServerError(ResponseBaseBean responseBaseBean) {
+                    Toast.makeText(mActivity,responseBaseBean.desc,Toast.LENGTH_SHORT).show();
+                }
+            });
+        }else{
+            Toast.makeText(mActivity,"请先登录",Toast.LENGTH_SHORT).show();
+        }
     }
 
     public class QSBKAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
@@ -319,6 +339,10 @@ public class QSBKFragment extends BaseFragment {
             mQSBKElements.addAll(elements);
             mCurrentState = LOAD_DATA_SUCCESS_STATE;
             notifyDataSetChanged();
+        }
+
+        public List<QSBKElement> getData(){
+            return mQSBKElements;
         }
 
         public void setLoadDataState(int state){
@@ -349,7 +373,7 @@ public class QSBKFragment extends BaseFragment {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, final int position) {
             QSBKViewHolder mQSBKViewHolder = null;
             if(holder instanceof QSBKViewHolder){
                 mQSBKViewHolder = (QSBKViewHolder) holder;
@@ -388,8 +412,17 @@ public class QSBKFragment extends BaseFragment {
             }else{
                 if(mQSBKViewHolder != null){
                     final QSBKElement mQSBKElement = mQSBKElements.get(position);
+
                     Glide.with(mActivity).load(mQSBKElement.author_head_img).into(mQSBKViewHolder.mAuthorHeadImg);
+
                     mQSBKViewHolder.mAuthorNameTv.setText(mQSBKElement.author_name);
+
+                    if(mQSBKElement.is_collect){
+                        mQSBKViewHolder.mCollectImg.setImageResource(R.mipmap.collect_select_icon);
+                    }else{
+                        mQSBKViewHolder.mCollectImg.setImageResource(R.mipmap.collect_cancel_icon);
+                    }
+
                     if(mQSBKElement.isAnonymity()){
                         mQSBKViewHolder.mAuthorSexAgeLl.setVisibility(View.GONE);
                     }else{
@@ -474,6 +507,17 @@ public class QSBKFragment extends BaseFragment {
                             }
                         }
                     });
+
+                    mQSBKViewHolder.mCollectImg.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            if(!mQSBKElement.is_collect){
+                                doForCollect(QSBKElement.QSBK_COLLECT_OPERATOR_COLLECT, position, mQSBKElement);
+                            }else{
+                                doForCollect(QSBKElement.QSBK_COLLECT_OPERATOR_CANCEL, position, mQSBKElement);
+                            }
+                        }
+                    });
                 }
             }
         }
@@ -497,6 +541,7 @@ public class QSBKFragment extends BaseFragment {
         public TextView mCommentNumberTv;
         public ImageView mShareWechatFriendImg;
         public ImageView mShareWechatFriendsImg;
+        public ImageView mCollectImg;
 
         public LinearLayout mAuthorSexAgeLl;
 
@@ -516,6 +561,8 @@ public class QSBKFragment extends BaseFragment {
 
             mShareWechatFriendImg = mItemView.findViewById(R.id.share_wechat_friend_img);
             mShareWechatFriendsImg = mItemView.findViewById(R.id.share_wechat_friends_img);
+
+            mCollectImg = mItemView.findViewById(R.id.collect_img);
         }
     }
 
@@ -532,11 +579,6 @@ public class QSBKFragment extends BaseFragment {
             mLoadingView = mItemView.findViewById(R.id.loading_view);
             mLoadErrorView = mItemView.findViewById(R.id.load_error_view);
         }
-    }
-
-    public interface IQueryQSBK{
-        @GET("/cgi_server/cgi_qsbk/cgi_qsbk.py")
-        public Call<QSBKElementList> queryQSBK(@Query("page") int page);
     }
 
 }

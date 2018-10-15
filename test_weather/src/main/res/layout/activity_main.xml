@@ -8,11 +8,13 @@
     <include
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        layout="@layout/custom_tool_bar"/>
+        layout="@layout/custom_tool_bar"
+        android:visibility="visible"/>
 
     <include
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        layout="@layout/custom_drawer_layout"/>
+        layout="@layout/custom_drawer_layout"
+        android:visibility="visible"/>
 
 </LinearLayout>
