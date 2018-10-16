@@ -1,5 +1,6 @@
 package com.desay_sv.test_weather.fragment;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,8 +16,13 @@ import android.widget.TextView;
 import com.desay_sv.test_weather.R;
 import com.desay_sv.test_weather.custom.view.TodayWeatherView;
 import com.desay_sv.test_weather.event.BackSelectLeftMenuEvent;
+import com.desay_sv.test_weather.event.LoginSuccessEvent;
+import com.desay_sv.test_weather.event.LogoutSuccessEvent;
 import com.desay_sv.test_weather.event.SelectLeftMenuEvent;
+import com.desay_sv.test_weather.http.data.UserInfoResponseBean;
+import com.desay_sv.test_weather.utils.Constants;
 import com.desay_sv.test_weather.utils.EventBusUtils;
+import com.desay_sv.test_weather.utils.SharePreUtils;
 import com.zxl.common.DebugUtil;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -107,13 +113,23 @@ public class LeftMenuFragment extends BaseFragment {
                 holder.mItemLeftMenuContentLl.setSelected(false);
             }
 
-            holder.mItemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    setSelectedPosition(position);
-                    EventBusUtils.post(new SelectLeftMenuEvent(position));
-                }
-            });
+            UserInfoResponseBean userInfoResponseBean = SharePreUtils.getInstance(mActivity).getUserInfo();
+
+            if(userInfoResponseBean == null && position == Constants.LEFT_MENU_POSITION_2){
+                holder.mItemView.setEnabled(false);
+                holder.mItemLeftMenuContentLl.setBackgroundColor(Color.parseColor("#BDBDBD"));
+            }else{
+                holder.mItemView.setEnabled(true);
+                holder.mItemLeftMenuContentLl.setBackgroundResource(R.drawable.s_item_left_menu);
+                holder.mItemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        setSelectedPosition(position);
+                        EventBusUtils.post(new SelectLeftMenuEvent(position));
+                    }
+                });
+            }
+
         }
 
         @Override
@@ -150,5 +166,15 @@ public class LeftMenuFragment extends BaseFragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onBackSelectLeftMenuEvent(BackSelectLeftMenuEvent event){
         setSelectedPosition(event.mPosition);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onLoginSuccessEvent(LoginSuccessEvent event){
+        mLeftMenuAdapter.notifyDataSetChanged();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onLogoutSuccessEvent(LogoutSuccessEvent event){
+        mLeftMenuAdapter.notifyDataSetChanged();
     }
 }

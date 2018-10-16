@@ -37,6 +37,7 @@ import com.desay_sv.test_weather.http.data.TodayWeatherResponseBean;
 import com.desay_sv.test_weather.utils.CommonUtils;
 import com.desay_sv.test_weather.utils.Constants;
 import com.desay_sv.test_weather.utils.EventBusUtils;
+import com.desay_sv.test_weather.utils.SharePreUtils;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
 import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
 import com.tencent.mm.opensdk.modelmsg.WXTextObject;
@@ -255,6 +256,11 @@ public class MainActivity extends AppCompatActivity {
             if(mLeftMenuPositionStack.size() > 1){
                 mLeftMenuPositionStack.pop();
                 position = mLeftMenuPositionStack.get(mLeftMenuPositionStack.size() - 1);
+
+                if(position == Constants.LEFT_MENU_POSITION_2 && SharePreUtils.getInstance(mContext).getUserInfo() == null){
+                    mLeftMenuPositionStack.pop();
+                    position = mLeftMenuPositionStack.get(mLeftMenuPositionStack.size() - 1);
+                }
 
                 showContentFragment(position);
 

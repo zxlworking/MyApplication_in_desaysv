@@ -13,11 +13,14 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.desay_sv.test_weather.R;
+import com.desay_sv.test_weather.event.LoginSuccessEvent;
+import com.desay_sv.test_weather.event.LogoutSuccessEvent;
 import com.desay_sv.test_weather.http.HttpUtils;
 import com.desay_sv.test_weather.http.data.ResponseBaseBean;
 import com.desay_sv.test_weather.http.data.UserInfoResponseBean;
 import com.desay_sv.test_weather.http.listener.NetRequestListener;
 import com.desay_sv.test_weather.utils.CommonUtils;
+import com.desay_sv.test_weather.utils.EventBusUtils;
 import com.desay_sv.test_weather.utils.SharePreUtils;
 import com.zxl.common.DebugUtil;
 
@@ -79,6 +82,7 @@ public class AccountFragment extends BaseFragment {
                 case R.id.logout_card_view:
                     mClickState = CLICK_UNKNOWN_STATE;
                     SharePreUtils.getInstance(mActivity).saveUserInfo(null);
+                    EventBusUtils.post(new LogoutSuccessEvent());
                     break;
                 case R.id.cancel_card_view:
                     mClickState = CLICK_UNKNOWN_STATE;
@@ -351,6 +355,8 @@ public class AccountFragment extends BaseFragment {
 
                 mClickState = LOGIN_SUCCESS_STATE;
                 doForkState(mClickState);
+
+                EventBusUtils.post(new LoginSuccessEvent());
 
                 isLogining = false;
                 Toast.makeText(mActivity,"登录成功!",Toast.LENGTH_LONG).show();
