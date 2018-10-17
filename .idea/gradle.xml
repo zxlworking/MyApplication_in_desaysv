@@ -8,6 +8,7 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/CasualLiving" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/test_calculate" />
             <option value="$PROJECT_DIR$/test_cpu" />
@@ -24,7 +25,6 @@
             <option value="$PROJECT_DIR$/test_pause_stop" />
             <option value="$PROJECT_DIR$/test_qsbk" />
             <option value="$PROJECT_DIR$/test_retrofit" />
-            <option value="$PROJECT_DIR$/test_weather" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />

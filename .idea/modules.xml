@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/CasualLiving/CasualLiving.iml" filepath="$PROJECT_DIR$/CasualLiving/CasualLiving.iml" />
       <module fileurl="file://$PROJECT_DIR$/MyApplication_in_desaysv.iml" filepath="$PROJECT_DIR$/MyApplication_in_desaysv.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_calculate/test_calculate.iml" filepath="$PROJECT_DIR$/test_calculate/test_calculate.iml" />
@@ -19,7 +20,7 @@
       <module fileurl="file://$PROJECT_DIR$/test_pause_stop/test_pause_stop.iml" filepath="$PROJECT_DIR$/test_pause_stop/test_pause_stop.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_qsbk/test_qsbk.iml" filepath="$PROJECT_DIR$/test_qsbk/test_qsbk.iml" />
       <module fileurl="file://$PROJECT_DIR$/test_retrofit/test_retrofit.iml" filepath="$PROJECT_DIR$/test_retrofit/test_retrofit.iml" />
-      <module fileurl="file://$PROJECT_DIR$/test_weather/test_weather.iml" filepath="$PROJECT_DIR$/test_weather/test_weather.iml" />
+      <module fileurl="file://D:\uidq0955\zxl\my_github_project\MyApplication_in_desaysv\CasualLiving\test_weather.iml" filepath="D:\uidq0955\zxl\my_github_project\MyApplication_in_desaysv\CasualLiving\test_weather.iml" />
     </modules>
   </component>
 </project>
