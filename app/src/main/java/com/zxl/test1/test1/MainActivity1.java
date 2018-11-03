@@ -110,4 +110,10 @@ public class MainActivity1 extends AppCompatActivity {
     interface ITest{
         void print();
     }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        System.out.println("zxl--->onKeyDown--->"+keyCode+"--->"+event.getAction());
+        return super.onKeyDown(keyCode, event);
+    }
 }
