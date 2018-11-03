@@ -71,4 +71,5 @@ dependencies {
 //    compile 'com.tencent.mm.opensdk:wechat-sdk-android-with-mta:+'
     compile 'com.tencent.mm.opensdk:wechat-sdk-android-with-mta:1.0.2'
     implementation files('libs/BaiduLBS_Android.jar')
+    //test_20181103_1
 }
